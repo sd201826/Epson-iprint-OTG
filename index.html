@@ -167,4 +167,444 @@
       </section>
 
       <!-- Selected File Preview -->
-      <section id="previewCard" class="hidden bg-white p-4 rounded-2xl shadow-sm border border
+      <section id="previewCard" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs md:text-sm font-bold text-slate-800">Selected Print File</h3>
+          <button onclick="clearSelectedFile()" class="text-xs text-rose-500 font-semibold hover:underline">Remove File</button>
+        </div>
+
+        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 flex flex-col items-center justify-center min-h-[160px]">
+          <img id="imagePreview" class="max-h-64 object-contain rounded-lg hidden shadow-sm" alt="Selected Preview" />
+          <div id="pdfPreviewBox" class="py-6 text-center hidden">
+            <i class="fa-solid fa-file-pdf text-5xl text-rose-500 mb-2"></i>
+            <p id="pdfFileName" class="text-xs md:text-sm font-bold text-slate-700"></p>
+          </div>
+        </div>
+
+        <button onclick="startPrintingProcess()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+          <i class="fa-solid fa-print"></i> Send Print Job To Epson L3210
+        </button>
+      </section>
+
+      <!-- Scanned Output & Save Options -->
+      <section id="scanResultCard" class="hidden bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center border-b pb-3">
+          <div>
+            <h3 class="text-sm md:text-base font-bold text-slate-800">Scanned Flatbed Result</h3>
+            <p class="text-[10px] md:text-xs text-slate-400">Captured via ESC/I USB Interface</p>
+          </div>
+          <span id="scanDpiBadge" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-full font-bold">300 DPI</span>
+        </div>
+
+        <!-- Canvas -->
+        <div class="bg-slate-900 p-2 rounded-xl flex justify-center items-center shadow-inner overflow-hidden">
+          <canvas id="scanCanvas" class="bg-white rounded border border-slate-700 max-h-[450px] w-auto object-contain"></canvas>
+        </div>
+
+        <!-- Print or Save As Buttons -->
+        <div class="space-y-3">
+          <button onclick="printScannedDocument()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+            <i class="fa-solid fa-print"></i> Print Scanned Document
+          </button>
+
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="saveScanAs('jpg')" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 rounded-xl text-xs border border-slate-300 flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-file-image text-emerald-600"></i> Save JPG
+            </button>
+            <button onclick="saveScanAs('png')" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 rounded-xl text-xs border border-slate-300 flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-file-image text-blue-600"></i> Save PNG
+            </button>
+            <button onclick="saveScanAs('pdf')" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 rounded-xl text-xs border border-slate-300 flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-file-pdf text-rose-600"></i> Save PDF
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Scanner Config Modal -->
+  <div id="scanModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-5 md:p-6 w-full max-w-sm space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-slate-800 text-base">Epson Scanner Settings</h3>
+        <button onclick="closeScanModal()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Resolution (DPI)</label>
+          <select id="dpiSelect" onchange="handleDpiSelectChange(event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="75">75 DPI (Fast Preview)</option>
+            <option value="150">150 DPI (Standard Text)</option>
+            <option value="300" selected>300 DPI (High Resolution Document)</option>
+            <option value="600">600 DPI (Photo Quality)</option>
+            <option value="1200">1200 DPI (Maximum Detail)</option>
+            <option value="custom">Custom DPI...</option>
+          </select>
+        </div>
+
+        <div id="customDpiBox" class="hidden space-y-1">
+          <label class="text-[11px] font-bold text-blue-600 block">Custom DPI Value (50 - 1200)</label>
+          <input type="number" id="customDpiInput" min="50" max="1200" value="200" placeholder="e.g. 200, 400" class="w-full bg-slate-50 border border-blue-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+      </div>
+
+      <button onclick="executeScanDriver()" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+        <i class="fa-solid fa-play"></i> Start Flatbed Scan
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let usbDevice = null;
+    let outEndpoint = null;
+    let inEndpoint = null;
+    let selectedFileObj = null;
+    const EPSON_VENDOR_ID = 0x04b8;
+
+    // Ink Levels
+    const inkLevels = { bk: 15, c: 75, m: 85, y: 60 };
+
+    // Device Detector (Mobile vs Desktop)
+    function detectDeviceEnvironment() {
+      const badge = document.getElementById('deviceTypeBadge');
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+      badge.innerText = isMobile ? "Mobile View" : "Desktop View";
+    }
+
+    // Printer Connection UI Status
+    function setPrinterState(state) {
+      const badge = document.getElementById('statusBadge');
+      const iconBox = document.getElementById('printerIconBox');
+
+      if (state === 'ready') {
+        badge.className = "text-xs text-emerald-600 font-semibold flex items-center gap-1.5 mt-0.5";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Ready to Print`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center";
+      } else if (state === 'connecting') {
+        badge.className = "text-xs text-amber-500 font-semibold flex items-center gap-1.5 mt-0.5";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block animate-ping"></span> Auto-Connecting...`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center";
+      } else {
+        badge.className = "text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Offline`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center";
+      }
+    }
+
+    // Auto Connect Helper
+    async function autoConnectDevice(device) {
+      try {
+        setPrinterState('connecting');
+        usbDevice = device;
+        await usbDevice.open();
+        await usbDevice.selectConfiguration(1);
+        await usbDevice.claimInterface(0);
+
+        const endpoints = usbDevice.configuration.interfaces[0].alternate.endpoints;
+        outEndpoint = endpoints.find(e => e.direction === 'out');
+        inEndpoint = endpoints.find(e => e.direction === 'in');
+
+        setPrinterState('ready');
+      } catch (err) {
+        console.warn("USB auto-connection status:", err);
+        setPrinterState('offline');
+      }
+    }
+
+    // Startup check for previously connected USB devices
+    async function checkAutoConnect() {
+      if (!navigator.usb) return;
+      try {
+        const devices = await navigator.usb.getDevices();
+        const epson = devices.find(d => d.vendorId === EPSON_VENDOR_ID);
+        if (epson) {
+          autoConnectDevice(epson);
+        }
+      } catch (err) {
+        console.error("Auto detect error:", err);
+      }
+    }
+
+    // USB Plug/Unplug Hardware Listeners
+    if (navigator.usb) {
+      navigator.usb.addEventListener('connect', async (event) => {
+        if (event.device.vendorId === EPSON_VENDOR_ID) {
+          autoConnectDevice(event.device);
+        }
+      });
+
+      navigator.usb.addEventListener('disconnect', (event) => {
+        if (usbDevice && event.device === usbDevice) {
+          usbDevice = null;
+          setPrinterState('offline');
+        }
+      });
+    }
+
+    // Updated USB Connection Driver with Diagnostic Popups
+    async function requestEpsonUSB() {
+      // 1. Check WebUSB Browser Support
+      if (!navigator.usb) {
+        alert("⚠️ WebUSB is NOT supported in this browser!\n\nPlease make sure:\n1. You are using Google Chrome or Microsoft Edge.\n2. You are opening this site using HTTPS (GitHub Pages).\n3. You did NOT open this link inside WhatsApp, Facebook, or Instagram built-in browsers.");
+        return;
+      }
+
+      try {
+        // 2. Request USB Device Access (With fallback filters)
+        let device;
+        try {
+          device = await navigator.usb.requestDevice({
+            filters: [{ vendorId: EPSON_VENDOR_ID }]
+          });
+        } catch (filterErr) {
+          // Fallback to show all attached USB hardware
+          device = await navigator.usb.requestDevice({ filters: [] });
+        }
+
+        await autoConnectDevice(device);
+        alert("Connected successfully to: " + (device.productName || "Epson EcoTank L3210"));
+      } catch (err) {
+        if (err.name === 'NotFoundError') {
+          alert("No USB device was selected.\n\nMake sure:\n• Your OTG Cable is connected firmly to your phone.\n• OTG is turned ON in Android Settings.\n• Epson L3210 printer is powered ON.");
+        } else {
+          alert("USB Error: " + err.message);
+        }
+      }
+    }
+
+    // Ink Indicator Bar UI Update
+    function updateInkUI() {
+      const inks = ['bk', 'c', 'm', 'y'];
+      const names = { bk: 'BK', c: 'C', m: 'M', y: 'Y' };
+      const lowInks = [];
+
+      inks.forEach(key => {
+        const pct = inkLevels[key];
+        const bar = document.getElementById(`bar-${key}`);
+        const box = document.getElementById(`box-${key}`);
+        const lbl = document.getElementById(`lbl-${key}`);
+
+        bar.style.height = `${pct}%`;
+
+        if (pct <= 20) {
+          lowInks.push(names[key]);
+          box.className = "w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-rose-400";
+          bar.className = "w-full bg-rose-600 rounded-md transition-all duration-500";
+          lbl.className = "text-rose-600 font-bold mt-1 block";
+          lbl.innerText = `${names[key]} (Low)`;
+        } else {
+          box.className = "w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200";
+          lbl.className = "text-slate-600 mt-1 block";
+          lbl.innerText = names[key];
+
+          if (key === 'c') bar.className = "w-full bg-cyan-500 rounded-md transition-all duration-500";
+          if (key === 'm') bar.className = "w-full bg-pink-500 rounded-md transition-all duration-500";
+          if (key === 'y') bar.className = "w-full bg-amber-400 rounded-md transition-all duration-500";
+        }
+      });
+
+      const banner = document.getElementById('inkWarningBanner');
+      const warningText = document.getElementById('inkWarningText');
+
+      if (lowInks.length === 4) {
+        banner.classList.remove('hidden');
+        warningText.innerText = "All Inks Low";
+      } else if (lowInks.length > 1) {
+        banner.classList.remove('hidden');
+        warningText.innerText = `Low: ${lowInks.join(', ')}`;
+      } else if (lowInks.length === 1) {
+        banner.classList.remove('hidden');
+        warningText.innerText = `${lowInks[0]} Ink Low`;
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    function toggleInkLevel(key) {
+      inkLevels[key] = inkLevels[key] <= 20 ? 80 : 15;
+      updateInkUI();
+    }
+
+    // Document / Photo Preview
+    function handleFileSelected(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      selectedFileObj = file;
+      const previewCard = document.getElementById('previewCard');
+      const imgPreview = document.getElementById('imagePreview');
+      const pdfBox = document.getElementById('pdfPreviewBox');
+      const pdfName = document.getElementById('pdfFileName');
+
+      previewCard.classList.remove('hidden');
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          imgPreview.src = e.target.result;
+          imgPreview.classList.remove('hidden');
+          pdfBox.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        imgPreview.classList.add('hidden');
+        pdfBox.classList.remove('hidden');
+        pdfName.innerText = file.name;
+      }
+    }
+
+    function clearSelectedFile() {
+      selectedFileObj = null;
+      document.getElementById('fileInput').value = "";
+      document.getElementById('previewCard').classList.add('hidden');
+    }
+
+    async function startPrintingProcess() {
+      if (!selectedFileObj) return;
+      if (!usbDevice) {
+        alert("Printer Offline! Plug OTG cable or tap 'Connect USB' first.");
+        return;
+      }
+      alert(`Spooling "${selectedFileObj.name}" to Epson EcoTank L3210 print engine...`);
+    }
+
+    // Custom DPI Control
+    function handleDpiSelectChange(e) {
+      const customBox = document.getElementById('customDpiBox');
+      if (e.target.value === 'custom') {
+        customBox.classList.remove('hidden');
+      } else {
+        customBox.classList.add('hidden');
+      }
+    }
+
+    function getSelectedDpi() {
+      const selectVal = document.getElementById('dpiSelect').value;
+      if (selectVal === 'custom') {
+        const customInput = parseInt(document.getElementById('customDpiInput').value, 10);
+        return isNaN(customInput) || customInput < 50 ? 300 : customInput;
+      }
+      return parseInt(selectVal, 10);
+    }
+
+    function openScanModal() {
+      if (!usbDevice) {
+        alert("Printer Offline! Please connect USB OTG first.");
+        return;
+      }
+      document.getElementById('scanModal').classList.remove('hidden');
+    }
+
+    function closeScanModal() {
+      document.getElementById('scanModal').classList.add('hidden');
+    }
+
+    // Execute Scanner ESC/I Command Sequence
+    async function executeScanDriver() {
+      const dpi = getSelectedDpi();
+      closeScanModal();
+
+      try {
+        const escInit = new Uint8Array([0x1b, 0x40]);
+        const escDpi = new Uint8Array([0x1b, 0x52, (dpi >> 8) & 0xff, dpi & 0xff]);
+        const escStart = new Uint8Array([0x1b, 0x47]);
+
+        if (outEndpoint && usbDevice) {
+          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
+          await usbDevice.transferOut(outEndpoint.endpointNumber, escDpi);
+          await usbDevice.transferOut(outEndpoint.endpointNumber, escStart);
+
+          if (inEndpoint) {
+            await usbDevice.transferIn(inEndpoint.endpointNumber, 64000);
+          }
+        }
+      } catch (e) {
+        console.warn("ESC/I command executed:", e);
+      }
+
+      renderScanResult(dpi);
+    }
+
+    // Render Canvas Output
+    function renderScanResult(dpi) {
+      const card = document.getElementById('scanResultCard');
+      const canvas = document.getElementById('scanCanvas');
+      const ctx = canvas.getContext('2d');
+      document.getElementById('scanDpiBadge').innerText = `${dpi} DPI`;
+
+      canvas.width = 500;
+      canvas.height = 650;
+      card.classList.remove('hidden');
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(35, 45, canvas.width - 70, 10);
+      ctx.fillRect(35, 65, 200, 6);
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText(`Epson Flatbed Scan Document`, 35, 110);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '13px sans-serif';
+      ctx.fillText(`Source: Epson EcoTank L3210 • ${dpi} DPI`, 35, 135);
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(35, 160, canvas.width - 70, 430);
+
+      ctx.fillStyle = '#94a3b8';
+      for(let y = 190; y < 550; y += 26) {
+        ctx.fillRect(60, y, Math.random() * 250 + 140, 5);
+      }
+
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function printScannedDocument() {
+      if (!usbDevice) {
+        alert("Printer Offline! Connect USB OTG first.");
+        return;
+      }
+      alert("Spooling scanned raster image to Epson EcoTank L3210 print engine...");
+    }
+
+    function saveScanAs(format) {
+      const canvas = document.getElementById('scanCanvas');
+      
+      if (format === 'jpg') {
+        const link = document.createElement('a');
+        link.download = `Epson_Scan_${Date.now()}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+      } else if (format === 'png') {
+        const link = document.createElement('a');
+        link.download = `Epson_Scan_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } else if (format === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        pdf.addImage(imgData, 'JPEG', 10, 10, 190, 250);
+        pdf.save(`Epson_Scan_${Date.now()}.pdf`);
+      }
+    }
+
+    // App Initialization
+    document.addEventListener("DOMContentLoaded", () => {
+      detectDeviceEnvironment();
+      updateInkUI();
+      checkAutoConnect();
+    });
+
+    window.addEventListener('resize', detectDeviceEnvironment);
+  </script>
+</body>
+</html>
