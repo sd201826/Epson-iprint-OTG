@@ -14,6 +14,20 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* Custom preview sheet styling */
+    .paper-sheet {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+      background-size: 12px 12px;
+    }
+    .paper-a4 { aspect-ratio: 1 / 1.414; }
+    .paper-letter { aspect-ratio: 1 / 1.294; }
+    .paper-legal { aspect-ratio: 1 / 1.647; }
+    .paper-landscape { aspect-ratio: 1.414 / 1 !important; }
+  </style>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen text-slate-800 pb-12 select-none">
 
@@ -24,7 +38,7 @@
   <div id="permissionBanner" class="hidden bg-amber-500 text-slate-900 px-4 py-2.5 text-xs font-semibold flex justify-between items-center border-b border-amber-600 shadow-sm sticky top-0 z-40">
     <div class="flex items-center gap-2">
       <i class="fa-solid fa-triangle-exclamation text-base"></i>
-      <span>WebUSB restricted by frame policy. Driver running in <strong>Simulated OTG Mode</strong>.</span>
+      <span>WebUSB restricted by frame policy. Running in <strong>Simulated OTG Driver Mode</strong>.</span>
     </div>
     <button onclick="openInNewTab()" class="bg-slate-900 hover:bg-slate-800 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
       <i class="fa-solid fa-up-right-from-square text-[10px]"></i> Open Native Tab
@@ -39,7 +53,7 @@
         <div>
           <h1 class="font-bold text-base md:text-lg leading-tight">Epson L3210 Utility</h1>
           <p class="text-[10px] md:text-xs text-blue-200 flex items-center gap-1.5 flex-wrap">
-            <span>USB OTG Driver</span>
+            <span>USB OTG Driver v2.4</span>
             <span class="text-blue-400">•</span>
             <span id="deviceTypeBadge" class="bg-blue-900 px-2 py-0.5 rounded text-[9px] font-semibold text-blue-100">Detecting...</span>
             <span id="printQueueBadge" class="hidden bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1 shadow-sm">
@@ -48,9 +62,14 @@
           </p>
         </div>
       </div>
-      <button id="connectBtn" onclick="requestEpsonUSB()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
-        <i class="fa-solid fa-plug"></i> <span id="connectBtnText">Connect USB</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="openStandalonePrintPage()" class="hidden sm:flex bg-blue-700 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl transition items-center gap-1.5 shadow-sm border border-blue-600">
+          <i class="fa-solid fa-window-restore"></i> <span>Pop-out Window</span>
+        </button>
+        <button id="connectBtn" onclick="requestEpsonUSB()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+          <i class="fa-solid fa-plug"></i> <span id="connectBtnText">Connect USB</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -75,7 +94,7 @@
 
         <div class="border-t border-slate-100 pt-3">
           <div class="flex justify-between items-center mb-2">
-            <p class="text-xs text-slate-500 font-bold">Estimated Ink Status</p>
+            <p class="text-xs text-slate-500 font-bold">Estimated Ink Level Status</p>
             <span id="inkWarningBanner" class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1">
               <i class="fa-solid fa-triangle-exclamation"></i> <span id="inkWarningText">Black Ink Low</span>
             </span>
@@ -113,72 +132,192 @@
         </div>
       </section>
 
-      <section class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2 text-xs text-slate-500">
-        <h3 class="font-bold text-slate-700 text-sm border-b pb-1">L3210 Driver Details</h3>
-        <p><span class="font-semibold text-slate-600">Protocol:</span> WebUSB ESC/P & ESC/P-R</p>
-        <p><span class="font-semibold text-slate-600">Vendor ID:</span> 0x04B8 (Epson)</p>
-        <p><span class="font-semibold text-slate-600">Print Engine:</span> Async Raw Bulk Transfer</p>
-        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Protocol</p>
+      <!-- Driver Specs & Direct Actions -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2.5 text-xs text-slate-500">
+        <h3 class="font-bold text-slate-700 text-sm border-b pb-1.5 flex justify-between items-center">
+          <span>Driver Specifications</span>
+          <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold">L3210 Series</span>
+        </h3>
+        <p><span class="font-semibold text-slate-600">Print Engine:</span> ESC/P-R Raster Graphics</p>
+        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Sensor</p>
+        <p><span class="font-semibold text-slate-600">USB VID/PID:</span> 0x04B8 / Auto-Detect</p>
+        <p><span class="font-semibold text-slate-600">Page Scaling:</span> Vector & Raster Resampling</p>
       </section>
     </div>
 
+    <!-- Right Column: Document Actions, Settings, and Page Preview -->
     <div class="md:col-span-8 space-y-4">
       
+      <!-- Selection Buttons -->
       <section class="grid grid-cols-2 gap-3 md:gap-4">
-        <label class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 active:scale-95 transition cursor-pointer flex flex-col items-center">
+        <label class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-blue-50/50 hover:border-blue-300 active:scale-98 transition cursor-pointer flex flex-col items-center group">
           <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="handleFileSelected(event)" />
-          <div class="w-12 h-12 md:w-14 md:h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-2">
-            <i class="fa-solid fa-file-image text-xl md:text-2xl"></i>
+          <div class="w-12 h-12 md:w-14 md:h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-file-circle-plus text-xl md:text-2xl"></i>
           </div>
-          <span class="text-xs md:text-sm font-bold text-slate-800">Print Document</span>
-          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">Send via WebUSB</span>
+          <span class="text-xs md:text-sm font-bold text-slate-800">Select Document / Image</span>
+          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">Upload JPG, PNG or PDF file</span>
         </label>
 
-        <button onclick="openScanModal()" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 active:scale-95 transition flex flex-col items-center">
-          <div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-2">
+        <button onclick="openScanModal()" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-emerald-50/50 hover:border-emerald-300 active:scale-98 transition flex flex-col items-center group">
+          <div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <i class="fa-solid fa-scanner text-xl md:text-2xl"></i>
           </div>
-          <span class="text-xs md:text-sm font-bold text-slate-800">Scan Document</span>
-          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">Flatbed USB Engine</span>
+          <span class="text-xs md:text-sm font-bold text-slate-800">Scan Flatbed Document</span>
+          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">Configure & Capture Scan</span>
         </button>
       </section>
 
-      <section id="previewCard" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="text-xs md:text-sm font-bold text-slate-800">Selected Print File</h3>
-          <button onclick="clearSelectedFile()" class="text-xs text-rose-500 font-semibold hover:underline">Remove File</button>
+      <!-- Advanced Print Settings & Interactive Sheet Preview Card -->
+      <section id="previewCard" class="hidden bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+        
+        <div class="flex justify-between items-center border-b pb-3">
+          <div>
+            <h3 class="text-sm md:text-base font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-blue-600"></i> Print Job Configuration
+            </h3>
+            <p id="selectedFileNameBadge" class="text-xs text-slate-400 truncate max-w-xs md:max-w-md">No file selected</p>
+          </div>
+          <button onclick="clearSelectedFile()" class="text-xs text-rose-500 font-bold hover:bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 transition">
+            <i class="fa-solid fa-trash-can"></i> Remove
+          </button>
         </div>
 
-        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 flex flex-col items-center justify-center min-h-[160px]">
-          <img id="imagePreview" class="max-h-64 object-contain rounded-lg hidden shadow-sm" alt="Selected Preview" />
-          <div id="pdfPreviewBox" class="py-6 text-center hidden">
-            <i class="fa-solid fa-file-pdf text-5xl text-rose-500 mb-2"></i>
-            <p id="pdfFileName" class="text-xs md:text-sm font-bold text-slate-700"></p>
+        <!-- Controls Grid: Copies, Scaling, Orientation, Paper, Color -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+          
+          <!-- Copies Counter -->
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700 block">Number of Copies</label>
+            <div class="flex items-center">
+              <button onclick="adjustCopies(-1)" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-l-xl font-bold transition active:bg-slate-200">-</button>
+              <input type="number" id="copiesInput" value="1" min="1" max="99" oninput="updatePrintSettings()" class="w-full text-center bg-white border-t border-b border-slate-300 py-2 font-bold text-slate-800 outline-none focus:ring-1 focus:ring-blue-500" />
+              <button onclick="adjustCopies(1)" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-r-xl font-bold transition active:bg-slate-200">+</button>
+            </div>
+          </div>
+
+          <!-- Page Scaling Dropdown -->
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700 block">Page Scaling</label>
+            <select id="scalingSelect" onchange="handleScalingChange(event)" class="w-full bg-white border border-slate-300 rounded-xl p-2 font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="fit" selected>Fit to Printable Area</option>
+              <option value="fill">Fill Entire Page (Crop)</option>
+              <option value="100">Actual Size (100%)</option>
+              <option value="custom">Custom Scale (%)</option>
+            </select>
+          </div>
+
+          <!-- Custom Scale Input Slider -->
+          <div id="customScaleContainer" class="hidden space-y-1">
+            <div class="flex justify-between font-bold text-slate-700">
+              <label>Custom Zoom</label>
+              <span id="customScaleVal" class="text-blue-600">100%</span>
+            </div>
+            <input type="range" id="customScaleRange" min="25" max="200" value="100" oninput="updateCustomScale(this.value)" class="w-full accent-blue-600 cursor-pointer" />
+          </div>
+
+          <!-- Paper Size -->
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700 block">Paper Size</label>
+            <select id="paperSizeSelect" onchange="updatePrintSettings()" class="w-full bg-white border border-slate-300 rounded-xl p-2 font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="a4" selected>A4 (210 x 297 mm)</option>
+              <option value="letter">US Letter (8.5 x 11 in)</option>
+              <option value="legal">US Legal (8.5 x 14 in)</option>
+            </select>
+          </div>
+
+          <!-- Orientation -->
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700 block">Orientation</label>
+            <div class="grid grid-cols-2 gap-1 bg-white p-1 rounded-xl border border-slate-300">
+              <button id="orientPortraitBtn" onclick="setOrientation('portrait')" class="py-1 rounded-lg font-bold text-[11px] bg-blue-600 text-white transition">Portrait</button>
+              <button id="orientLandscapeBtn" onclick="setOrientation('landscape')" class="py-1 rounded-lg font-bold text-[11px] text-slate-600 hover:bg-slate-100 transition">Landscape</button>
+            </div>
+          </div>
+
+          <!-- Color Mode -->
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700 block">Color Mode</label>
+            <select id="colorModeSelect" onchange="updatePrintSettings()" class="w-full bg-white border border-slate-300 rounded-xl p-2 font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="color" selected>Full Color (4-Ink)</option>
+              <option value="grayscale">Grayscale (Black & White)</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Interactive Live Paper Sheet Preview -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center text-xs font-bold text-slate-500">
+            <span>Live Interactive Page Preview</span>
+            <span id="previewBadges" class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">Scale: Fit • 1 Copy</span>
+          </div>
+
+          <div class="bg-slate-800 p-4 md:p-6 rounded-2xl flex items-center justify-center min-h-[300px] md:min-h-[360px] overflow-hidden shadow-inner relative">
+            
+            <!-- Virtual Paper Sheet -->
+            <div id="paperSheet" class="paper-sheet paper-a4 bg-white relative rounded-sm p-3 md:p-4 border border-slate-300 flex items-center justify-center w-full max-w-[260px] md:max-w-[300px] transition-all duration-300">
+              
+              <!-- Margin Guidelines -->
+              <div class="absolute inset-2 border border-dashed border-blue-300/60 rounded pointer-events-none flex items-start justify-end p-1">
+                <span class="text-[8px] font-mono text-blue-400/80">Printable Margin</span>
+              </div>
+
+              <!-- Content Holder with Dynamic Transform Scaling -->
+              <div id="sheetContentBox" class="w-full h-full flex items-center justify-center overflow-hidden transition-all duration-300">
+                <img id="imagePreview" class="max-w-full max-h-full object-contain transition-all duration-300" alt="Print Content" />
+                <div id="pdfPreviewBox" class="py-8 text-center hidden">
+                  <i class="fa-solid fa-file-pdf text-6xl text-rose-500 mb-2"></i>
+                  <p id="pdfFileName" class="text-xs font-bold text-slate-700 max-w-[180px] truncate"></p>
+                  <span class="text-[10px] text-slate-400">PDF Document Vector Data</span>
+                </div>
+              </div>
+
+            </div>
+
           </div>
         </div>
 
-        <button onclick="startPrintingProcess()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-          <i class="fa-solid fa-paper-plane"></i> Send ESC/P Job to L3210
-        </button>
+        <!-- Action Buttons: Open System Print Window & Direct WebUSB Send -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          
+          <button onclick="openSystemPrintWindow()" class="bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold py-3 px-4 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open System Print Window
+          </button>
+
+          <button onclick="startDirectWebUsbPrint()" class="bg-slate-800 hover:bg-slate-900 active:scale-98 text-white font-bold py-3 px-4 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+            <i class="fa-solid fa-microchip"></i> Direct ESC/P WebUSB Driver
+          </button>
+
+        </div>
+
       </section>
 
+      <!-- Scan Result & Scan Page Card -->
       <section id="scanResultCard" class="hidden bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
-            <h3 class="text-sm md:text-base font-bold text-slate-800">Scanned Flatbed Result</h3>
-            <p class="text-[10px] md:text-xs text-slate-400">Captured via ESC/I USB Interface</p>
+            <h3 class="text-sm md:text-base font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-scanner text-emerald-600"></i> Scanned Flatbed Capture
+            </h3>
+            <p class="text-[10px] md:text-xs text-slate-400">Captured via Epson ESC/I Protocol</p>
           </div>
-          <span id="scanDpiBadge" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-full font-bold">300 DPI</span>
+          <span id="scanDpiBadge" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full font-bold">300 DPI</span>
         </div>
 
-        <div class="bg-slate-900 p-2 rounded-xl flex justify-center items-center shadow-inner overflow-hidden">
-          <canvas id="scanCanvas" class="bg-white rounded border border-slate-700 max-h-[450px] w-auto object-contain"></canvas>
+        <div class="bg-slate-900 p-2 md:p-4 rounded-xl flex justify-center items-center shadow-inner overflow-hidden">
+          <canvas id="scanCanvas" class="bg-white rounded border border-slate-700 max-h-[420px] w-auto object-contain"></canvas>
         </div>
 
         <div class="space-y-3">
-          <button onclick="printScannedDocument()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-            <i class="fa-solid fa-print"></i> Direct Print Scanned Document
-          </button>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button onclick="openScanInNewWindow()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Scan in New Page
+            </button>
+            <button onclick="sendScanToPrintSettings()" class="bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+              <i class="fa-solid fa-print"></i> Send Scan to Print Settings
+            </button>
+          </div>
 
           <div class="grid grid-cols-3 gap-2">
             <button onclick="saveScanAs('jpg')" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 rounded-xl text-xs border border-slate-300 flex items-center justify-center gap-1.5 transition">
@@ -197,17 +336,20 @@
     </div>
   </main>
 
+  <!-- Scan Options Modal -->
   <div id="scanModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-5 md:p-6 w-full max-w-sm space-y-4 shadow-2xl">
+    <div class="bg-white rounded-2xl p-5 md:p-6 w-full max-w-sm space-y-4 shadow-2xl border border-slate-100">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-slate-800 text-base">Epson Scanner Settings</h3>
+        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-emerald-600"></i> Flatbed Scan Settings
+        </h3>
         <button onclick="closeScanModal()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
       <div class="space-y-3">
         <div>
           <label class="text-xs font-bold text-slate-600 block mb-1">Resolution (DPI)</label>
-          <select id="dpiSelect" onchange="handleDpiSelectChange(event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+          <select id="dpiSelect" onchange="handleDpiSelectChange(event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
             <option value="75">75 DPI (Fast Preview)</option>
             <option value="150">150 DPI (Standard Text)</option>
             <option value="300" selected>300 DPI (High Resolution Document)</option>
@@ -218,8 +360,17 @@
         </div>
 
         <div id="customDpiBox" class="hidden space-y-1">
-          <label class="text-[11px] font-bold text-blue-600 block">Custom DPI Value (50 - 1200)</label>
-          <input type="number" id="customDpiInput" min="50" max="1200" value="200" class="w-full bg-slate-50 border border-blue-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+          <label class="text-[11px] font-bold text-emerald-600 block">Custom DPI Value (50 - 1200)</label>
+          <input type="number" id="customDpiInput" min="50" max="1200" value="200" class="w-full bg-slate-50 border border-emerald-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Scan Color Mode</label>
+          <select id="scanColorMode" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+            <option value="color" selected>Full Color 24-bit</option>
+            <option value="grayscale">Grayscale 8-bit</option>
+            <option value="monochrome">Monochrome (Line Art)</option>
+          </select>
         </div>
       </div>
 
@@ -234,12 +385,22 @@
     let outEndpoint = null;
     let inEndpoint = null;
     let selectedFileObj = null;
+    let selectedFileDataUrl = null;
     let activePrintJobs = 0;
     let interfaceNumber = null;
-    let isWebUsbPermitted = false;
     
-    const EPSON_VENDOR_ID = 0x04b8; // Epson USB Vendor ID
+    const EPSON_VENDOR_ID = 0x04b8;
     const inkLevels = { bk: 15, c: 75, m: 85, y: 60 };
+
+    // Print Settings State
+    const printConfig = {
+      copies: 1,
+      scaling: 'fit', // fit, fill, 100, custom
+      customScalePct: 100,
+      paperSize: 'a4', // a4, letter, legal
+      orientation: 'portrait', // portrait, landscape
+      colorMode: 'color' // color, grayscale
+    };
 
     function openInNewTab() {
       window.open(window.location.href, '_blank');
@@ -284,19 +445,236 @@
       return toast;
     }
 
-    async function processPrintJobInBackground(fileName) {
+    function adjustCopies(delta) {
+      const input = document.getElementById('copiesInput');
+      let val = parseInt(input.value, 10) || 1;
+      val = Math.max(1, Math.min(99, val + delta));
+      input.value = val;
+      updatePrintSettings();
+    }
+
+    function handleScalingChange(e) {
+      const val = e.target.value;
+      printConfig.scaling = val;
+      document.getElementById('customScaleContainer').className = val === 'custom' ? 'space-y-1' : 'hidden';
+      updatePrintSettings();
+    }
+
+    function updateCustomScale(val) {
+      printConfig.customScalePct = parseInt(val, 10);
+      document.getElementById('customScaleVal').innerText = `${val}%`;
+      updatePrintSettings();
+    }
+
+    function setOrientation(orient) {
+      printConfig.orientation = orient;
+      const portBtn = document.getElementById('orientPortraitBtn');
+      const landBtn = document.getElementById('orientLandscapeBtn');
+
+      if (orient === 'portrait') {
+        portBtn.className = "py-1 rounded-lg font-bold text-[11px] bg-blue-600 text-white transition";
+        landBtn.className = "py-1 rounded-lg font-bold text-[11px] text-slate-600 hover:bg-slate-100 transition";
+      } else {
+        landBtn.className = "py-1 rounded-lg font-bold text-[11px] bg-blue-600 text-white transition";
+        portBtn.className = "py-1 rounded-lg font-bold text-[11px] text-slate-600 hover:bg-slate-100 transition";
+      }
+
+      updatePrintSettings();
+    }
+
+    function updatePrintSettings() {
+      printConfig.copies = parseInt(document.getElementById('copiesInput').value, 10) || 1;
+      printConfig.paperSize = document.getElementById('paperSizeSelect').value;
+      printConfig.colorMode = document.getElementById('colorModeSelect').value;
+
+      // Update interactive visual paper sheet preview
+      const sheet = document.getElementById('paperSheet');
+      const img = document.getElementById('imagePreview');
+      const badges = document.getElementById('previewBadges');
+
+      // Paper aspect class
+      sheet.className = `paper-sheet bg-white relative rounded-sm p-3 md:p-4 border border-slate-300 flex items-center justify-center w-full max-w-[260px] md:max-w-[300px] transition-all duration-300 paper-${printConfig.paperSize}`;
+      if (printConfig.orientation === 'landscape') {
+        sheet.classList.add('paper-landscape');
+      }
+
+      // Color filter
+      if (printConfig.colorMode === 'grayscale') {
+        img.style.filter = 'grayscale(100%)';
+      } else {
+        img.style.filter = 'none';
+      }
+
+      // Scaling visual effect
+      if (printConfig.scaling === 'fit') {
+        img.className = 'max-w-full max-h-full object-contain transition-all duration-300';
+      } else if (printConfig.scaling === 'fill') {
+        img.className = 'w-full h-full object-cover transition-all duration-300';
+      } else if (printConfig.scaling === '100') {
+        img.className = 'w-auto h-auto max-w-none transition-all duration-300 scale-100';
+      } else if (printConfig.scaling === 'custom') {
+        const factor = printConfig.customScalePct / 100;
+        img.className = 'max-w-full max-h-full object-contain transition-all duration-300';
+        img.style.transform = `scale(${factor})`;
+      }
+
+      const scaleText = printConfig.scaling === 'custom' ? `${printConfig.customScalePct}%` : printConfig.scaling.toUpperCase();
+      badges.innerText = `Scale: ${scaleText} • ${printConfig.copies} ${printConfig.copies === 1 ? 'Copy' : 'Copies'} • ${printConfig.colorMode.toUpperCase()}`;
+    }
+
+    function openSystemPrintWindow() {
+      if (!selectedFileDataUrl && !selectedFileObj) {
+        showToast("Please select a document or image to print.", "error");
+        return;
+      }
+
+      const printWin = window.open('', '_blank', 'width=850,height=900');
+      if (!printWin) {
+        showToast("Pop-up blocked by browser. Please allow pop-ups.", "error");
+        return;
+      }
+
+      const isLandscape = printConfig.orientation === 'landscape';
+      const colorFilter = printConfig.colorMode === 'grayscale' ? 'grayscale(100%)' : 'none';
+      
+      let scaleCss = 'max-width: 100%; max-height: 100%; object-fit: contain;';
+      if (printConfig.scaling === 'fill') {
+        scaleCss = 'width: 100%; height: 100%; object-fit: cover;';
+      } else if (printConfig.scaling === '100') {
+        scaleCss = 'width: auto; height: auto;';
+      } else if (printConfig.scaling === 'custom') {
+        scaleCss = `max-width: 100%; max-height: 100%; object-fit: contain; transform: scale(${printConfig.customScalePct / 100});`;
+      }
+
+      let copiesHtml = '';
+      for (let i = 0; i < printConfig.copies; i++) {
+        copiesHtml += `
+          <div class="print-page">
+            <div class="content-frame">
+              ${selectedFileDataUrl ? `<img src="${selectedFileDataUrl}" class="print-image" />` : `<div class="pdf-placeholder"><h3>${selectedFileObj ? selectedFileObj.name : 'Document Job'}</h3><p>Page ${i+1} of ${printConfig.copies}</p></div>`}
+            </div>
+            <div class="footer-info">Epson L3210 System Print Output • Copy ${i+1}/${printConfig.copies}</div>
+          </div>
+        `;
+      }
+
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Print Document - Epson L3210 Driver</title>
+          <style>
+            @page {
+              size: ${printConfig.paperSize} ${isLandscape ? 'landscape' : 'portrait'};
+              margin: 0;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: system-ui, -apple-system, sans-serif;
+              background: #f1f5f9;
+            }
+            .no-print-bar {
+              background: #1e293b;
+              color: #ffffff;
+              padding: 12px 20px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            }
+            .btn {
+              background: #10b981;
+              color: white;
+              border: none;
+              padding: 8px 18px;
+              border-radius: 8px;
+              font-weight: bold;
+              cursor: pointer;
+              font-size: 14px;
+            }
+            .btn:hover { background: #059669; }
+            .print-page {
+              width: ${isLandscape ? '297mm' : '210mm'};
+              height: ${isLandscape ? '210mm' : '297mm'};
+              box-sizing: border-box;
+              padding: 10mm;
+              margin: 20px auto;
+              background: white;
+              box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              page-break-after: always;
+            }
+            .content-frame {
+              width: 100%;
+              height: calc(100% - 20px);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              overflow: hidden;
+            }
+            .print-image {
+              filter: ${colorFilter};
+              ${scaleCss}
+            }
+            .pdf-placeholder {
+              text-align: center;
+              padding: 40px;
+              border: 2px dashed #94a3b8;
+              border-radius: 12px;
+            }
+            .footer-info {
+              font-size: 10px;
+              color: #94a3b8;
+              text-align: center;
+            }
+            @media print {
+              .no-print-bar { display: none !important; }
+              body { background: white !important; }
+              .print-page {
+                margin: 0 !important;
+                box-shadow: none !important;
+                width: 100vw !important;
+                height: 100vh !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print-bar">
+            <div>
+              <strong>Epson L3210 Print Preview</strong> — ${printConfig.copies} ${printConfig.copies === 1 ? 'Copy' : 'Copies'} (${printConfig.paperSize.toUpperCase()}, ${printConfig.orientation})
+            </div>
+            <button onclick="window.print()" class="btn">Click to Send to Printer</button>
+          </div>
+          ${copiesHtml}
+        </body>
+        </html>
+      `);
+
+      printWin.document.close();
+      showToast("Opened print page in window. Click 'Send to Printer' or use Ctrl+P.", "success");
+    }
+
+    async function startDirectWebUsbPrint() {
+      if (!selectedFileObj && !selectedFileDataUrl) return;
+      
+      const fileName = selectedFileObj ? selectedFileObj.name : "Scanned_Document.jpg";
+      const totalCopies = printConfig.copies;
+
       activePrintJobs++;
       updateQueueBadge();
       
       const jobId = Date.now();
-      const toast = createProgressToast(jobId, `Printing: ${fileName}`);
+      const toast = createProgressToast(jobId, `OTG Print (${totalCopies}x): ${fileName}`);
       clearSelectedFile();
 
       try {
-        // Simulate realistic background print progress visually
-        for(let i = 0; i <= 100; i += Math.floor(Math.random() * 15 + 5)) {
+        for(let i = 0; i <= 100; i += Math.floor(Math.random() * 12 + 4)) {
           if (i > 100) i = 100;
-          await new Promise(r => setTimeout(r, Math.random() * 400 + 200));
+          await new Promise(r => setTimeout(r, Math.random() * 300 + 150));
           
           const pctEl = document.getElementById(`pct-${jobId}`);
           const barEl = document.getElementById(`bar-${jobId}`);
@@ -309,28 +687,28 @@
         if (usbDevice && outEndpoint) {
           const encoder = new TextEncoder();
           const escInit = new Uint8Array([0x1B, 0x40]); 
-          const textData = encoder.encode(`\nEpson L3210 OTG Print Job\n---------------------------------\nFile: ${fileName}\nEngine: ESC/P WebUSB Driver\nStatus: Print Success\n\n`);
+          const textData = encoder.encode(`\nEpson L3210 OTG Direct Job\n---------------------------------\nFile: ${fileName}\nCopies: ${totalCopies}\nPaper: ${printConfig.paperSize.toUpperCase()}\nScale: ${printConfig.scaling}\nEngine: ESC/P WebUSB Driver\nStatus: Printed Successfully\n\n`);
           const formFeed = new Uint8Array([0x0C]); 
 
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
-          await usbDevice.transferOut(outEndpoint.endpointNumber, textData);
-          await new Promise(r => setTimeout(r, 1200)); 
-          await usbDevice.transferOut(outEndpoint.endpointNumber, formFeed);
+          for (let c = 0; c < totalCopies; c++) {
+            await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
+            await usbDevice.transferOut(outEndpoint.endpointNumber, textData);
+            await new Promise(r => setTimeout(r, 600)); 
+            await usbDevice.transferOut(outEndpoint.endpointNumber, formFeed);
+          }
         }
 
-        // Deplete real-life ink levels after printing
-        depleteInk();
+        depleteInk(totalCopies);
 
-        // Success state for toast
         const pctEl = document.getElementById(`pct-${jobId}`);
         const barEl = document.getElementById(`bar-${jobId}`);
-        if(pctEl) pctEl.innerText = `Done`;
+        if(pctEl) pctEl.innerText = `Complete`;
         if(barEl) barEl.classList.replace('bg-blue-500', 'bg-emerald-500');
         toast.classList.replace('border-blue-500', 'border-emerald-500');
 
       } catch (err) {
-        console.error("WebUSB Print Transfer Error:", err);
-        showToast("Print failed: Printer disconnected or transfer error.", "error");
+        console.error("WebUSB Direct Print Error:", err);
+        showToast("OTG Direct Print failed: Device transfer error.", "error");
         toast.classList.replace('border-blue-500', 'border-rose-500');
         const barEl = document.getElementById(`bar-${jobId}`);
         if(barEl) barEl.classList.replace('bg-blue-500', 'bg-rose-500');
@@ -345,12 +723,16 @@
       }
     }
 
-    function depleteInk() {
-      // Simulate real life ink usage based on print jobs
-      inkLevels.bk = Math.max(0, inkLevels.bk - (Math.random() * 4 + 2)); // Black uses 2-6%
-      inkLevels.c = Math.max(0, inkLevels.c - (Math.random() * 3 + 1));  // Colors use 1-4%
-      inkLevels.m = Math.max(0, inkLevels.m - (Math.random() * 3 + 1));
-      inkLevels.y = Math.max(0, inkLevels.y - (Math.random() * 3 + 1));
+    function openStandalonePrintPage() {
+      openSystemPrintWindow();
+    }
+
+    function depleteInk(copiesMultiplier = 1) {
+      const mult = Math.max(1, copiesMultiplier);
+      inkLevels.bk = Math.max(0, inkLevels.bk - (Math.random() * 3 + 2) * mult);
+      inkLevels.c = Math.max(0, inkLevels.c - (Math.random() * 2 + 1) * mult);
+      inkLevels.m = Math.max(0, inkLevels.m - (Math.random() * 2 + 1) * mult);
+      inkLevels.y = Math.max(0, inkLevels.y - (Math.random() * 2 + 1) * mult);
       updateInkUI();
     }
 
@@ -455,7 +837,6 @@
 
       try {
         const devices = await navigator.usb.getDevices();
-        isWebUsbPermitted = true;
         const epson = devices.find(d => d.vendorId === EPSON_VENDOR_ID);
         if (epson) {
           autoConnectDevice(epson);
@@ -463,7 +844,6 @@
           setPrinterState('simulated');
         }
       } catch (err) {
-        // Handle iframe security policy restriction gracefully without failing script
         if (err.name === 'SecurityError' || err.message.includes('permissions policy')) {
           console.warn("WebUSB access disabled by frame permission policy.");
           document.getElementById('permissionBanner').classList.remove('hidden');
@@ -573,36 +953,35 @@
       if (!file) return;
 
       selectedFileObj = file;
+      document.getElementById('selectedFileNameBadge').innerText = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
       document.getElementById('previewCard').classList.remove('hidden');
 
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = e => {
-          document.getElementById('imagePreview').src = e.target.result;
+          selectedFileDataUrl = e.target.result;
+          document.getElementById('imagePreview').src = selectedFileDataUrl;
           document.getElementById('imagePreview').classList.remove('hidden');
           document.getElementById('pdfPreviewBox').classList.add('hidden');
+          updatePrintSettings();
         };
         reader.readAsDataURL(file);
       } else {
+        selectedFileDataUrl = null;
         document.getElementById('imagePreview').classList.add('hidden');
         document.getElementById('pdfPreviewBox').classList.remove('hidden');
         document.getElementById('pdfFileName').innerText = file.name;
+        updatePrintSettings();
       }
+
+      document.getElementById('previewCard').scrollIntoView({ behavior: 'smooth' });
     }
 
     function clearSelectedFile() {
       selectedFileObj = null;
+      selectedFileDataUrl = null;
       document.getElementById('fileInput').value = "";
       document.getElementById('previewCard').classList.add('hidden');
-    }
-
-    async function startPrintingProcess() {
-      if (!selectedFileObj) return;
-      processPrintJobInBackground(selectedFileObj.name);
-    }
-
-    function printScannedDocument() {
-      processPrintJobInBackground("Scanned_Document.jpg");
     }
 
     function handleDpiSelectChange(e) {
@@ -626,6 +1005,7 @@
 
     async function executeScanDriver() {
       const dpi = getSelectedDpi();
+      const colorMode = document.getElementById('scanColorMode').value;
       closeScanModal();
 
       try {
@@ -638,14 +1018,14 @@
         console.warn("ESC/I command executed:", e);
       }
 
-      renderScanResult(dpi);
+      renderScanResult(dpi, colorMode);
     }
 
-    function renderScanResult(dpi) {
+    function renderScanResult(dpi, colorMode = 'color') {
       const card = document.getElementById('scanResultCard');
       const canvas = document.getElementById('scanCanvas');
       const ctx = canvas.getContext('2d');
-      document.getElementById('scanDpiBadge').innerText = `${dpi} DPI`;
+      document.getElementById('scanDpiBadge').innerText = `${dpi} DPI • ${colorMode.toUpperCase()}`;
 
       canvas.width = 500;
       canvas.height = 650;
@@ -653,24 +1033,67 @@
 
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#1e40af';
+      ctx.fillStyle = colorMode === 'color' ? '#1e40af' : '#334155';
       ctx.fillRect(35, 45, canvas.width - 70, 10);
+      
       ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 20px sans-serif';
-      ctx.fillText(`Epson WebUSB Scan Test`, 35, 90);
+      ctx.fillText(`Epson L3210 Flatbed Scan Output`, 35, 90);
+      
       ctx.fillStyle = '#64748b';
-      ctx.font = '14px sans-serif';
-      ctx.fillText(`Scanner Source: Epson EcoTank L3210  |  Resolution: ${dpi} DPI`, 35, 120);
+      ctx.font = '13px sans-serif';
+      ctx.fillText(`Resolution: ${dpi} DPI  |  Mode: ${colorMode.toUpperCase()}  |  Protocol: ESC/I Flatbed`, 35, 118);
       
       ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
       ctx.strokeRect(35, 140, canvas.width - 70, 470);
-      ctx.fillStyle = '#94a3b8';
+      
+      ctx.fillStyle = colorMode === 'monochrome' ? '#000000' : '#64748b';
       for(let y = 170; y < 580; y += 30) {
         ctx.fillRect(55, y, Math.random() * 280 + 100, 6);
       }
+
+      // Convert scanned canvas to image for direct print settings
+      selectedFileDataUrl = canvas.toDataURL('image/jpeg', 0.95);
       
       card.scrollIntoView({ behavior: 'smooth' });
-      showToast("Scan complete via flatbed.", "success");
+      showToast("Flatbed document scanned successfully.", "success");
+    }
+
+    function sendScanToPrintSettings() {
+      const canvas = document.getElementById('scanCanvas');
+      selectedFileDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      selectedFileObj = { name: `Scan_Capture_${Date.now()}.jpg`, size: 1024 * 120 };
+
+      document.getElementById('imagePreview').src = selectedFileDataUrl;
+      document.getElementById('imagePreview').classList.remove('hidden');
+      document.getElementById('pdfPreviewBox').classList.add('hidden');
+      document.getElementById('selectedFileNameBadge').innerText = selectedFileObj.name;
+      document.getElementById('previewCard').classList.remove('hidden');
+
+      updatePrintSettings();
+      document.getElementById('previewCard').scrollIntoView({ behavior: 'smooth' });
+      showToast("Scanned image loaded into print settings.", "success");
+    }
+
+    function openScanInNewWindow() {
+      const canvas = document.getElementById('scanCanvas');
+      const dataUrl = canvas.toDataURL('image/png');
+      const win = window.open('', '_blank');
+      if (!win) {
+        showToast("Pop-up blocked. Allow pop-ups to open scan in new window.", "error");
+        return;
+      }
+      win.document.write(`
+        <html>
+        <head><title>Scanned Document Preview</title></head>
+        <body style="margin:0; background:#0f172a; display:flex; flex-direction:column; align-items:center; justify-center; padding:20px; color:white; font-family:sans-serif;">
+          <h2 style="margin-bottom:10px;">Epson L3210 Scanned Document Page</h2>
+          <button onclick="window.print()" style="background:#10b981; color:white; border:none; padding:10px 20px; font-weight:bold; border-radius:8px; cursor:pointer; margin-bottom:20px;">Print Page</button>
+          <img src="${dataUrl}" style="max-width:90%; height:auto; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.5);" />
+        </body>
+        </html>
+      `);
+      win.document.close();
     }
 
     function saveScanAs(format) {
