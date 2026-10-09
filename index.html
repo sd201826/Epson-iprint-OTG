@@ -12,11 +12,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Epson OTG">
   
-  <!-- Favicon / App Icon -->
+  <!-- App Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>">
 
-  <!-- Manifest for Home Screen Installation -->
+  <!-- Dynamic PWA Web Manifest -->
   <script>
     const manifest = {
       "name": "Epson iPrint OTG",
@@ -38,13 +38,14 @@
     document.head.appendChild(link);
   </script>
 
+  <!-- External CDNs -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen text-slate-800 pb-12 select-none">
 
-  <!-- Main Navigation Header -->
+  <!-- Header -->
   <header class="bg-blue-800 text-white shadow-md p-4 sticky top-0 z-30">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       <div class="flex items-center space-x-3">
@@ -54,7 +55,7 @@
           <p class="text-[10px] md:text-xs text-blue-200 flex items-center gap-1.5">
             <span>USB OTG Driver</span>
             <span class="text-blue-400">•</span>
-            <span id="deviceTypeBadge" class="bg-blue-900 px-2 py-0.5 rounded text-[9px] font-semibold text-blue-100">Detecting Device...</span>
+            <span id="deviceTypeBadge" class="bg-blue-900 px-2 py-0.5 rounded text-[9px] font-semibold text-blue-100">Detecting...</span>
           </p>
         </div>
       </div>
@@ -64,13 +65,13 @@
     </div>
   </header>
 
-  <!-- Responsive Container (Adapts from Mobile Single Column to Desktop Multi-Column Dashboard) -->
+  <!-- Main Container (Responsive Grid for Mobile & Desktop) -->
   <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
 
-    <!-- Left Column / Top Section: Device Status & Ink Gauges -->
+    <!-- Left Column: Status & Ink Controls -->
     <div class="md:col-span-4 space-y-4">
       
-      <!-- Connection Status Panel -->
+      <!-- Hardware Status Card -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
         <div class="flex items-center justify-between">
           <div>
@@ -96,7 +97,7 @@
 
           <div class="grid grid-cols-4 gap-2 text-center text-[11px] font-bold">
             <!-- Black Ink (BK) -->
-            <div onclick="toggleInkLevel('bk')" class="cursor-pointer" title="Click to toggle level">
+            <div onclick="toggleInkLevel('bk')" class="cursor-pointer">
               <div id="box-bk" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-rose-300">
                 <div id="bar-bk" class="w-full bg-rose-600 h-[15%] rounded-md transition-all duration-500"></div>
               </div>
@@ -104,7 +105,7 @@
             </div>
 
             <!-- Cyan Ink (C) -->
-            <div onclick="toggleInkLevel('c')" class="cursor-pointer" title="Click to toggle level">
+            <div onclick="toggleInkLevel('c')" class="cursor-pointer">
               <div id="box-c" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
                 <div id="bar-c" class="w-full bg-cyan-500 h-[75%] rounded-md transition-all duration-500"></div>
               </div>
@@ -112,7 +113,7 @@
             </div>
 
             <!-- Magenta Ink (M) -->
-            <div onclick="toggleInkLevel('m')" class="cursor-pointer" title="Click to toggle level">
+            <div onclick="toggleInkLevel('m')" class="cursor-pointer">
               <div id="box-m" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
                 <div id="bar-m" class="w-full bg-pink-500 h-[85%] rounded-md transition-all duration-500"></div>
               </div>
@@ -120,7 +121,7 @@
             </div>
 
             <!-- Yellow Ink (Y) -->
-            <div onclick="toggleInkLevel('y')" class="cursor-pointer" title="Click to toggle level">
+            <div onclick="toggleInkLevel('y')" class="cursor-pointer">
               <div id="box-y" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
                 <div id="bar-y" class="w-full bg-amber-400 h-[60%] rounded-md transition-all duration-500"></div>
               </div>
@@ -134,18 +135,18 @@
       <section class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2 text-xs text-slate-500">
         <h3 class="font-bold text-slate-700 text-sm border-b pb-1">Driver Information</h3>
         <p><span class="font-semibold text-slate-600">Model Series:</span> Epson EcoTank L3210</p>
-        <p><span class="font-semibold text-slate-600">Interface:</span> USB 2.0 High-Speed / OTG</p>
-        <p><span class="font-semibold text-slate-600">Print Protocol:</span> ESC/P-R Raster</p>
-        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Protocol</p>
+        <p><span class="font-semibold text-slate-600">Interface:</span> USB 2.0 / OTG Host</p>
+        <p><span class="font-semibold text-slate-600">Print Protocol:</span> ESC/P-R Raster Engine</p>
+        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Driver</p>
       </section>
     </div>
 
-    <!-- Right Column / Actions & Main Canvas Dashboard -->
+    <!-- Right Column: Actions, Print Workspace & Scanner -->
     <div class="md:col-span-8 space-y-4">
       
-      <!-- Primary Action Buttons -->
+      <!-- Primary Actions -->
       <section class="grid grid-cols-2 gap-3 md:gap-4">
-        <!-- Print Document / Image File Picker -->
+        <!-- Print File Picker -->
         <label class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 active:scale-95 transition cursor-pointer flex flex-col items-center">
           <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="handleFileSelected(event)" />
           <div class="w-12 h-12 md:w-14 md:h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-2">
@@ -155,7 +156,7 @@
           <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">PDF, Photos, Scans</span>
         </label>
 
-        <!-- Open Flatbed Scanner -->
+        <!-- Scan Button -->
         <button onclick="openScanModal()" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 active:scale-95 transition flex flex-col items-center">
           <div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-2">
             <i class="fa-solid fa-scanner text-xl md:text-2xl"></i>
@@ -165,67 +166,5 @@
         </button>
       </section>
 
-      <!-- Print Document File Preview Card -->
-      <section id="previewCard" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="text-xs md:text-sm font-bold text-slate-800">Selected Print File</h3>
-          <button onclick="clearSelectedFile()" class="text-xs text-rose-500 font-semibold hover:underline">Remove File</button>
-        </div>
-
-        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 flex flex-col items-center justify-center min-h-[160px]">
-          <img id="imagePreview" class="max-h-64 object-contain rounded-lg hidden shadow-sm" alt="Selected Preview" />
-          <div id="pdfPreviewBox" class="py-6 text-center hidden">
-            <i class="fa-solid fa-file-pdf text-5xl text-rose-500 mb-2"></i>
-            <p id="pdfFileName" class="text-xs md:text-sm font-bold text-slate-700"></p>
-          </div>
-        </div>
-
-        <button onclick="startPrintingProcess()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-          <i class="fa-solid fa-print"></i> Send Print Job To Epson L3210
-        </button>
-      </section>
-
-      <!-- Scanner Canvas Workspace & Output Options -->
-      <section id="scanResultCard" class="hidden bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="flex justify-between items-center border-b pb-3">
-          <div>
-            <h3 class="text-sm md:text-base font-bold text-slate-800">Scanned Flatbed Result</h3>
-            <p class="text-[10px] md:text-xs text-slate-400">Captured via ESC/I USB Interface</p>
-          </div>
-          <span id="scanDpiBadge" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-full font-bold">300 DPI</span>
-        </div>
-
-        <!-- Canvas Frame -->
-        <div class="bg-slate-900 p-2 rounded-xl flex justify-center items-center shadow-inner overflow-hidden">
-          <canvas id="scanCanvas" class="bg-white rounded border border-slate-700 max-h-[450px] w-auto object-contain"></canvas>
-        </div>
-
-        <!-- Scan Output Options (Print or Save As) -->
-        <div class="space-y-3">
-          <button onclick="printScannedDocument()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-            <i class="fa-solid fa-print"></i> Print Scanned Document
-          </button>
-
-          <div class="grid grid-cols-3 gap-2">
-            <button onclick="saveScanAs('jpg')" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 rounded-xl text-xs border border-slate-300 flex items-center justify-center gap-1.5 transition">
-              <i class="fa-solid fa-file-image text-emerald-600"></i> Save JPG
-            </button>
-            <button onclick="saveScanAs('png')" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 rounded-xl text-xs border border-slate-300 flex items-center justify-center gap-1.5 transition">
-              <i class="fa-solid fa-file-image text-blue-600"></i> Save PNG
-            </button>
-            <button onclick="saveScanAs('pdf')" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 rounded-xl text-xs border border-slate-300 flex items-center justify-center gap-1.5 transition">
-              <i class="fa-solid fa-file-pdf text-rose-600"></i> Save PDF
-            </button>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-  </main>
-
-  <!-- Scanner Configuration Modal -->
-  <div id="scanModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-5 md:p-6 w-full max-w-sm space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class
+      <!-- Selected File Preview -->
+      <section id="previewCard" class="hidden bg-white p-4 rounded-2xl shadow-sm border border
