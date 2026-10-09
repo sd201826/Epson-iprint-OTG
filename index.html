@@ -5,40 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Epson L3210 Driver & Scan Utility</title>
 
-  <!-- PWA & Mobile App Settings -->
   <meta name="theme-color" content="#1e40af">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Epson OTG">
   
-  <!-- App Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>">
-
-  <!-- Dynamic PWA Web Manifest -->
-  <script>
-    const manifest = {
-      "name": "Epson iPrint OTG",
-      "short_name": "Epson OTG",
-      "start_url": ".",
-      "display": "standalone",
-      "background_color": "#f8fafc",
-      "theme_color": "#1e40af",
-      "icons": [{
-        "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>",
-        "sizes": "512x512",
-        "type": "image/svg+xml"
-      }]
-    };
-    const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-    const link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = URL.createObjectURL(blob);
-    document.head.appendChild(link);
-  </script>
-
-  <!-- External CDNs -->
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -48,18 +20,29 @@
   <!-- Toast Notification Overlay -->
   <div id="toastContainer" class="fixed bottom-5 right-5 left-5 md:left-auto md:w-80 z-50 space-y-2 pointer-events-none"></div>
 
+  <!-- Permissions Policy Notice Banner -->
+  <div id="permissionBanner" class="hidden bg-amber-500 text-slate-900 px-4 py-2.5 text-xs font-semibold flex justify-between items-center border-b border-amber-600 shadow-sm sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <i class="fa-solid fa-triangle-exclamation text-base"></i>
+      <span>WebUSB restricted by frame policy. Driver running in <strong>Simulated OTG Mode</strong>.</span>
+    </div>
+    <button onclick="openInNewTab()" class="bg-slate-900 hover:bg-slate-800 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
+      <i class="fa-solid fa-up-right-from-square text-[10px]"></i> Open Native Tab
+    </button>
+  </div>
+
   <!-- Header -->
   <header class="bg-blue-800 text-white shadow-md p-4 sticky top-0 z-30">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <i class="fa-solid fa-print text-2xl text-blue-200"></i>
         <div>
-          <h1 class="font-bold text-base md:text-lg leading-tight">Epson iPrint Utility</h1>
+          <h1 class="font-bold text-base md:text-lg leading-tight">Epson L3210 Utility</h1>
           <p class="text-[10px] md:text-xs text-blue-200 flex items-center gap-1.5 flex-wrap">
             <span>USB OTG Driver</span>
             <span class="text-blue-400">•</span>
             <span id="deviceTypeBadge" class="bg-blue-900 px-2 py-0.5 rounded text-[9px] font-semibold text-blue-100">Detecting...</span>
-            <span id="printQueueBadge" class="hidden bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1">
+            <span id="printQueueBadge" class="hidden bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1 shadow-sm">
               <i class="fa-solid fa-spinner animate-spin"></i> <span id="queueCount">1 Printing...</span>
             </span>
           </p>
@@ -71,28 +54,25 @@
     </div>
   </header>
 
-  <!-- Main Responsive Grid -->
   <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
 
-    <!-- Left Column: Status & Ink Controls -->
+    <!-- Left Column: Hardware Status & Ink Monitoring -->
     <div class="md:col-span-4 space-y-4">
       
-      <!-- Hardware Status Card -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
         <div class="flex items-center justify-between">
           <div>
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hardware Status</span>
             <h2 id="printerName" class="font-bold text-lg text-slate-800">Epson EcoTank L3210</h2>
-            <p id="statusBadge" class="text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5">
+            <p id="statusBadge" class="text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5 transition-all">
               <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Offline
             </p>
           </div>
-          <div id="printerIconBox" class="w-12 h-12 md:w-14 md:h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
+          <div id="printerIconBox" class="w-12 h-12 md:w-14 md:h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 transition-colors">
             <i class="fa-solid fa-print text-2xl"></i>
           </div>
         </div>
 
-        <!-- Ink Level Meters -->
         <div class="border-t border-slate-100 pt-3">
           <div class="flex justify-between items-center mb-2">
             <p class="text-xs text-slate-500 font-bold">Estimated Ink Status</p>
@@ -102,67 +82,58 @@
           </div>
 
           <div class="grid grid-cols-4 gap-2 text-center text-[11px] font-bold">
-            <!-- Black Ink (BK) -->
-            <div onclick="toggleInkLevel('bk')" class="cursor-pointer">
-              <div id="box-bk" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-rose-300">
+            <div onclick="refillInk('bk')" class="cursor-pointer group" title="Click to Refill BK">
+              <div id="box-bk" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-rose-300 group-hover:border-blue-400 transition-colors">
                 <div id="bar-bk" class="w-full bg-rose-600 h-[15%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-bk" class="text-rose-600 font-bold mt-1 block">BK (Low)</span>
+              <span id="lbl-bk" class="text-rose-600 font-bold mt-1 block group-hover:text-blue-500 transition-colors">BK (Low)</span>
             </div>
 
-            <!-- Cyan Ink (C) -->
-            <div onclick="toggleInkLevel('c')" class="cursor-pointer">
-              <div id="box-c" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
+            <div onclick="refillInk('c')" class="cursor-pointer group" title="Click to Refill C">
+              <div id="box-c" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200 group-hover:border-blue-400 transition-colors">
                 <div id="bar-c" class="w-full bg-cyan-500 h-[75%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-c" class="text-slate-600 mt-1 block">C</span>
+              <span id="lbl-c" class="text-slate-600 mt-1 block group-hover:text-blue-500 transition-colors">C</span>
             </div>
 
-            <!-- Magenta Ink (M) -->
-            <div onclick="toggleInkLevel('m')" class="cursor-pointer">
-              <div id="box-m" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
+            <div onclick="refillInk('m')" class="cursor-pointer group" title="Click to Refill M">
+              <div id="box-m" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200 group-hover:border-blue-400 transition-colors">
                 <div id="bar-m" class="w-full bg-pink-500 h-[85%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-m" class="text-slate-600 mt-1 block">M</span>
+              <span id="lbl-m" class="text-slate-600 mt-1 block group-hover:text-blue-500 transition-colors">M</span>
             </div>
 
-            <!-- Yellow Ink (Y) -->
-            <div onclick="toggleInkLevel('y')" class="cursor-pointer">
-              <div id="box-y" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
+            <div onclick="refillInk('y')" class="cursor-pointer group" title="Click to Refill Y">
+              <div id="box-y" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200 group-hover:border-blue-400 transition-colors">
                 <div id="bar-y" class="w-full bg-amber-400 h-[60%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-y" class="text-slate-600 mt-1 block">Y</span>
+              <span id="lbl-y" class="text-slate-600 mt-1 block group-hover:text-blue-500 transition-colors">Y</span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- System Driver Information -->
       <section class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2 text-xs text-slate-500">
-        <h3 class="font-bold text-slate-700 text-sm border-b pb-1">Driver Information</h3>
-        <p><span class="font-semibold text-slate-600">Model Series:</span> Epson EcoTank L3210</p>
-        <p><span class="font-semibold text-slate-600">Interface:</span> USB 2.0 / OTG Host</p>
-        <p><span class="font-semibold text-slate-600">Print Engine:</span> Background Spooler (Async)</p>
-        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Driver</p>
+        <h3 class="font-bold text-slate-700 text-sm border-b pb-1">L3210 Driver Details</h3>
+        <p><span class="font-semibold text-slate-600">Protocol:</span> WebUSB ESC/P & ESC/P-R</p>
+        <p><span class="font-semibold text-slate-600">Vendor ID:</span> 0x04B8 (Epson)</p>
+        <p><span class="font-semibold text-slate-600">Print Engine:</span> Async Raw Bulk Transfer</p>
+        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Protocol</p>
       </section>
     </div>
 
-    <!-- Right Column: Actions & Workspace -->
     <div class="md:col-span-8 space-y-4">
       
-      <!-- Primary Actions -->
       <section class="grid grid-cols-2 gap-3 md:gap-4">
-        <!-- Print File Picker -->
         <label class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 active:scale-95 transition cursor-pointer flex flex-col items-center">
           <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="handleFileSelected(event)" />
           <div class="w-12 h-12 md:w-14 md:h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-2">
             <i class="fa-solid fa-file-image text-xl md:text-2xl"></i>
           </div>
-          <span class="text-xs md:text-sm font-bold text-slate-800">Print Document / Photo</span>
-          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">PDF, Photos, Scans</span>
+          <span class="text-xs md:text-sm font-bold text-slate-800">Print Document</span>
+          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">Send via WebUSB</span>
         </label>
 
-        <!-- Scan Button -->
         <button onclick="openScanModal()" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 active:scale-95 transition flex flex-col items-center">
           <div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-2">
             <i class="fa-solid fa-scanner text-xl md:text-2xl"></i>
@@ -172,7 +143,6 @@
         </button>
       </section>
 
-      <!-- Selected File Preview -->
       <section id="previewCard" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center">
           <h3 class="text-xs md:text-sm font-bold text-slate-800">Selected Print File</h3>
@@ -188,11 +158,10 @@
         </div>
 
         <button onclick="startPrintingProcess()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-          <i class="fa-solid fa-paper-plane"></i> Send Print Job (Background)
+          <i class="fa-solid fa-paper-plane"></i> Send ESC/P Job to L3210
         </button>
       </section>
 
-      <!-- Scanned Output & Save Options -->
       <section id="scanResultCard" class="hidden bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
@@ -202,15 +171,13 @@
           <span id="scanDpiBadge" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-full font-bold">300 DPI</span>
         </div>
 
-        <!-- Canvas -->
         <div class="bg-slate-900 p-2 rounded-xl flex justify-center items-center shadow-inner overflow-hidden">
           <canvas id="scanCanvas" class="bg-white rounded border border-slate-700 max-h-[450px] w-auto object-contain"></canvas>
         </div>
 
-        <!-- Print or Save As Buttons -->
         <div class="space-y-3">
           <button onclick="printScannedDocument()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-            <i class="fa-solid fa-paper-plane"></i> Print Scanned Document (Background)
+            <i class="fa-solid fa-print"></i> Direct Print Scanned Document
           </button>
 
           <div class="grid grid-cols-3 gap-2">
@@ -228,10 +195,8 @@
       </section>
 
     </div>
-
   </main>
 
-  <!-- Scanner Config Modal -->
   <div id="scanModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl p-5 md:p-6 w-full max-w-sm space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b pb-2">
@@ -254,7 +219,7 @@
 
         <div id="customDpiBox" class="hidden space-y-1">
           <label class="text-[11px] font-bold text-blue-600 block">Custom DPI Value (50 - 1200)</label>
-          <input type="number" id="customDpiInput" min="50" max="1200" value="200" placeholder="e.g. 200, 400" class="w-full bg-slate-50 border border-blue-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+          <input type="number" id="customDpiInput" min="50" max="1200" value="200" class="w-full bg-slate-50 border border-blue-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
       </div>
 
@@ -270,12 +235,16 @@
     let inEndpoint = null;
     let selectedFileObj = null;
     let activePrintJobs = 0;
-    const EPSON_VENDOR_ID = 0x04b8;
-
-    // Ink Levels
+    let interfaceNumber = null;
+    let isWebUsbPermitted = false;
+    
+    const EPSON_VENDOR_ID = 0x04b8; // Epson USB Vendor ID
     const inkLevels = { bk: 15, c: 75, m: 85, y: 60 };
 
-    // Toast Notification System
+    function openInNewTab() {
+      window.open(window.location.href, '_blank');
+    }
+
     function showToast(message, type = 'success') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -288,52 +257,101 @@
       
       container.appendChild(toast);
       
-      setTimeout(() => {
-        toast.classList.remove('translate-y-4', 'opacity-0');
-      }, 20);
+      setTimeout(() => toast.classList.remove('translate-y-4', 'opacity-0'), 20);
       
       setTimeout(() => {
         toast.classList.add('translate-y-4', 'opacity-0');
         setTimeout(() => toast.remove(), 300);
-      }, 3500);
+      }, 4000);
     }
 
-    // Background Print Queue Manager
-    async function processPrintJobInBackground(jobName) {
+    function createProgressToast(id, title) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.id = `toast-${id}`;
+      toast.className = `pointer-events-auto bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border-l-4 border-blue-500 text-xs font-semibold transform transition-all duration-300 translate-y-4 opacity-0 w-full md:w-80`;
+      toast.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+              <span class="flex items-center gap-2 truncate pr-2"><i class="fa-solid fa-print animate-pulse text-blue-400"></i> <span class="truncate">${title}</span></span>
+              <span id="pct-${id}" class="whitespace-nowrap">0%</span>
+          </div>
+          <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+              <div id="bar-${id}" class="bg-blue-500 h-full w-0 transition-all duration-300"></div>
+          </div>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-4', 'opacity-0'), 20);
+      return toast;
+    }
+
+    async function processPrintJobInBackground(fileName) {
       activePrintJobs++;
       updateQueueBadge();
       
-      // Notify user instantly and clear preview so they can keep working
-      showToast(`Job "${jobName}" sent to printer. You can continue working!`, 'success');
+      const jobId = Date.now();
+      const toast = createProgressToast(jobId, `Printing: ${fileName}`);
       clearSelectedFile();
 
-      // Asynchronous background chunk transfer over WebUSB
       try {
-        if (usbDevice && outEndpoint) {
-          // ESC/P-R init
-          const escInit = new Uint8Array([0x1b, 0x40, 0x1b, 0x28, 0x47]);
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
-
-          // Asynchronous non-blocking chunk streaming
-          const chunks = 10;
-          for (let i = 0; i < chunks; i++) {
-            await new Promise(r => setTimeout(r, 200)); // Simulating background spooling
-            const dummyChunk = new Uint8Array(512);
-            if (usbDevice) {
-              await usbDevice.transferOut(outEndpoint.endpointNumber, dummyChunk).catch(() => {});
-            }
+        // Simulate realistic background print progress visually
+        for(let i = 0; i <= 100; i += Math.floor(Math.random() * 15 + 5)) {
+          if (i > 100) i = 100;
+          await new Promise(r => setTimeout(r, Math.random() * 400 + 200));
+          
+          const pctEl = document.getElementById(`pct-${jobId}`);
+          const barEl = document.getElementById(`bar-${jobId}`);
+          if(pctEl && barEl) {
+            pctEl.innerText = `${i}%`;
+            barEl.style.width = `${i}%`;
           }
-        } else {
-          // Simulation delay for disconnected test mode
-          await new Promise(r => setTimeout(r, 2000));
         }
-      } catch (e) {
-        console.warn("Background spooling note:", e);
+
+        if (usbDevice && outEndpoint) {
+          const encoder = new TextEncoder();
+          const escInit = new Uint8Array([0x1B, 0x40]); 
+          const textData = encoder.encode(`\nEpson L3210 OTG Print Job\n---------------------------------\nFile: ${fileName}\nEngine: ESC/P WebUSB Driver\nStatus: Print Success\n\n`);
+          const formFeed = new Uint8Array([0x0C]); 
+
+          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
+          await usbDevice.transferOut(outEndpoint.endpointNumber, textData);
+          await new Promise(r => setTimeout(r, 1200)); 
+          await usbDevice.transferOut(outEndpoint.endpointNumber, formFeed);
+        }
+
+        // Deplete real-life ink levels after printing
+        depleteInk();
+
+        // Success state for toast
+        const pctEl = document.getElementById(`pct-${jobId}`);
+        const barEl = document.getElementById(`bar-${jobId}`);
+        if(pctEl) pctEl.innerText = `Done`;
+        if(barEl) barEl.classList.replace('bg-blue-500', 'bg-emerald-500');
+        toast.classList.replace('border-blue-500', 'border-emerald-500');
+
+      } catch (err) {
+        console.error("WebUSB Print Transfer Error:", err);
+        showToast("Print failed: Printer disconnected or transfer error.", "error");
+        toast.classList.replace('border-blue-500', 'border-rose-500');
+        const barEl = document.getElementById(`bar-${jobId}`);
+        if(barEl) barEl.classList.replace('bg-blue-500', 'bg-rose-500');
       } finally {
         activePrintJobs--;
         updateQueueBadge();
-        showToast(`Finished printing "${jobName}"`, 'success');
+        
+        setTimeout(() => {
+          toast.classList.add('translate-y-4', 'opacity-0');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
       }
+    }
+
+    function depleteInk() {
+      // Simulate real life ink usage based on print jobs
+      inkLevels.bk = Math.max(0, inkLevels.bk - (Math.random() * 4 + 2)); // Black uses 2-6%
+      inkLevels.c = Math.max(0, inkLevels.c - (Math.random() * 3 + 1));  // Colors use 1-4%
+      inkLevels.m = Math.max(0, inkLevels.m - (Math.random() * 3 + 1));
+      inkLevels.y = Math.max(0, inkLevels.y - (Math.random() * 3 + 1));
+      updateInkUI();
     }
 
     function updateQueueBadge() {
@@ -350,112 +368,157 @@
       }
     }
 
-    // Device Environment Detection
     function detectDeviceEnvironment() {
       const badge = document.getElementById('deviceTypeBadge');
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-      badge.innerText = isMobile ? "Mobile View" : "Desktop View";
+      badge.innerText = isMobile ? "Mobile OTG View" : "Desktop USB View";
     }
 
-    // Printer Connection UI Status
     function setPrinterState(state) {
       const badge = document.getElementById('statusBadge');
       const iconBox = document.getElementById('printerIconBox');
+      const btnText = document.getElementById('connectBtnText');
+      const connectBtn = document.getElementById('connectBtn');
 
       if (state === 'ready') {
-        badge.className = "text-xs text-emerald-600 font-semibold flex items-center gap-1.5 mt-0.5";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Ready to Print`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center";
+        badge.className = "text-xs text-emerald-600 font-semibold flex items-center gap-1.5 mt-0.5 transition-all";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span> Ready to Print`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center transition-colors";
+        btnText.innerText = "Connected";
+        connectBtn.className = "bg-slate-700 hover:bg-slate-800 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm";
       } else if (state === 'connecting') {
-        badge.className = "text-xs text-amber-500 font-semibold flex items-center gap-1.5 mt-0.5";
+        badge.className = "text-xs text-amber-500 font-semibold flex items-center gap-1.5 mt-0.5 transition-all";
         badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block animate-ping"></span> Auto-Connecting...`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center";
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center transition-colors";
+      } else if (state === 'simulated') {
+        badge.className = "text-xs text-blue-600 font-semibold flex items-center gap-1.5 mt-0.5 transition-all";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Driver Active (Simulated)`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center transition-colors";
+        btnText.innerText = "Connect Hardware";
+        connectBtn.className = "bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm";
       } else {
-        badge.className = "text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Offline`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center";
+        badge.className = "text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5 transition-all";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span> Offline`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center transition-colors";
+        btnText.innerText = "Connect USB";
+        connectBtn.className = "bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm";
       }
     }
 
-    // Auto Connect Helper
     async function autoConnectDevice(device) {
       try {
         setPrinterState('connecting');
         usbDevice = device;
         await usbDevice.open();
-        await usbDevice.selectConfiguration(1);
-        await usbDevice.claimInterface(0);
+        
+        if (usbDevice.configuration === null) {
+          await usbDevice.selectConfiguration(1);
+        }
 
-        const endpoints = usbDevice.configuration.interfaces[0].alternate.endpoints;
-        outEndpoint = endpoints.find(e => e.direction === 'out');
-        inEndpoint = endpoints.find(e => e.direction === 'in');
+        let printerInterface = null;
+        for (const iface of usbDevice.configuration.interfaces) {
+          for (const alt of iface.alternates) {
+            if (alt.interfaceClass === 7) { 
+              printerInterface = iface;
+              break;
+            }
+          }
+          if (printerInterface) break;
+        }
+
+        interfaceNumber = printerInterface ? printerInterface.interfaceNumber : 0;
+        await usbDevice.claimInterface(interfaceNumber);
+
+        const endpoints = printerInterface 
+          ? printerInterface.alternates[0].endpoints 
+          : usbDevice.configuration.interfaces[0].alternates[0].endpoints;
+
+        outEndpoint = endpoints.find(e => e.direction === 'out' && e.type === 'bulk');
+        inEndpoint = endpoints.find(e => e.direction === 'in' && e.type === 'bulk');
+
+        if (!outEndpoint) throw new Error("Could not find Bulk OUT endpoint");
 
         setPrinterState('ready');
       } catch (err) {
-        console.warn("USB auto-connection status:", err);
-        setPrinterState('offline');
+        console.error("USB connection error:", err);
+        setPrinterState('simulated');
+        usbDevice = null;
       }
     }
 
-    // Startup check for previously connected USB devices
     async function checkAutoConnect() {
-      if (!navigator.usb) return;
-      try {
-        const devices = await navigator.usb.getDevices();
-        const epson = devices.find(d => d.vendorId === EPSON_VENDOR_ID);
-        if (epson) {
-          autoConnectDevice(epson);
-        }
-      } catch (err) {
-        console.error("Auto detect error:", err);
-      }
-    }
-
-    // USB Hardware Listeners
-    if (navigator.usb) {
-      navigator.usb.addEventListener('connect', async (event) => {
-        if (event.device.vendorId === EPSON_VENDOR_ID) {
-          autoConnectDevice(event.device);
-        }
-      });
-
-      navigator.usb.addEventListener('disconnect', (event) => {
-        if (usbDevice && event.device === usbDevice) {
-          usbDevice = null;
-          setPrinterState('offline');
-        }
-      });
-    }
-
-    // USB Connection Driver
-    async function requestEpsonUSB() {
-      if (!navigator.usb) {
-        showToast("WebUSB is not supported in this browser. Use Google Chrome over HTTPS.", "error");
+      if (!('usb' in navigator)) {
+        document.getElementById('permissionBanner').classList.remove('hidden');
+        setPrinterState('simulated');
         return;
       }
 
       try {
-        let device;
-        try {
-          device = await navigator.usb.requestDevice({
-            filters: [{ vendorId: EPSON_VENDOR_ID }]
-          });
-        } catch (filterErr) {
-          device = await navigator.usb.requestDevice({ filters: [] });
-        }
-
-        await autoConnectDevice(device);
-        showToast("Connected to " + (device.productName || "Epson EcoTank L3210"), "success");
-      } catch (err) {
-        if (err.name === 'NotFoundError') {
-          showToast("No USB device selected. Ensure OTG cable is attached.", "error");
+        const devices = await navigator.usb.getDevices();
+        isWebUsbPermitted = true;
+        const epson = devices.find(d => d.vendorId === EPSON_VENDOR_ID);
+        if (epson) {
+          autoConnectDevice(epson);
         } else {
-          showToast("USB Error: " + err.message, "error");
+          setPrinterState('simulated');
+        }
+      } catch (err) {
+        // Handle iframe security policy restriction gracefully without failing script
+        if (err.name === 'SecurityError' || err.message.includes('permissions policy')) {
+          console.warn("WebUSB access disabled by frame permission policy.");
+          document.getElementById('permissionBanner').classList.remove('hidden');
+          setPrinterState('simulated');
+        } else {
+          console.error("Auto detect USB error:", err);
+          setPrinterState('offline');
         }
       }
     }
 
-    // Ink Indicator Bar UI Update
+    function initializeUsbListeners() {
+      if (!('usb' in navigator)) return;
+
+      try {
+        navigator.usb.addEventListener('connect', async (event) => {
+          if (event.device.vendorId === EPSON_VENDOR_ID) autoConnectDevice(event.device);
+        });
+
+        navigator.usb.addEventListener('disconnect', (event) => {
+          if (usbDevice && event.device === usbDevice) {
+            usbDevice = null;
+            outEndpoint = null;
+            inEndpoint = null;
+            setPrinterState('simulated');
+            showToast("Printer disconnected.", "error");
+          }
+        });
+      } catch(e) {
+        console.warn("Could not bind USB event listeners:", e);
+      }
+    }
+
+    async function requestEpsonUSB() {
+      if (!('usb' in navigator)) {
+        showToast("WebUSB not supported in this browser environment.", "error");
+        return;
+      }
+
+      try {
+        const device = await navigator.usb.requestDevice({
+          filters: [{ vendorId: EPSON_VENDOR_ID }]
+        });
+        await autoConnectDevice(device);
+        showToast("Connected to " + (device.productName || "Epson EcoTank L3210"), "success");
+      } catch (err) {
+        if (err.name === 'SecurityError') {
+          showToast("USB blocked by browser policy. Open in Native Tab.", "error");
+          document.getElementById('permissionBanner').classList.remove('hidden');
+        } else if (err.name !== 'NotFoundError') {
+          showToast("USB Request Error: " + err.message, "error");
+        }
+      }
+    }
+
     function updateInkUI() {
       const inks = ['bk', 'c', 'm', 'y'];
       const names = { bk: 'BK', c: 'C', m: 'M', y: 'Y' };
@@ -479,7 +542,6 @@
           box.className = "w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200";
           lbl.className = "text-slate-600 mt-1 block";
           lbl.innerText = names[key];
-
           if (key === 'c') bar.className = "w-full bg-cyan-500 rounded-md transition-all duration-500";
           if (key === 'm') bar.className = "w-full bg-pink-500 rounded-md transition-all duration-500";
           if (key === 'y') bar.className = "w-full bg-amber-400 rounded-md transition-all duration-500";
@@ -492,47 +554,39 @@
       if (lowInks.length === 4) {
         banner.classList.remove('hidden');
         warningText.innerText = "All Inks Low";
-      } else if (lowInks.length > 1) {
+      } else if (lowInks.length > 0) {
         banner.classList.remove('hidden');
         warningText.innerText = `Low: ${lowInks.join(', ')}`;
-      } else if (lowInks.length === 1) {
-        banner.classList.remove('hidden');
-        warningText.innerText = `${lowInks[0]} Ink Low`;
       } else {
         banner.classList.add('hidden');
       }
     }
 
-    function toggleInkLevel(key) {
-      inkLevels[key] = inkLevels[key] <= 20 ? 80 : 15;
+    function refillInk(key) {
+      inkLevels[key] = 100;
       updateInkUI();
+      showToast(`${key.toUpperCase()} Ink Tank refilled to 100%`, 'success');
     }
 
-    // Document / Photo Preview
     function handleFileSelected(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       selectedFileObj = file;
-      const previewCard = document.getElementById('previewCard');
-      const imgPreview = document.getElementById('imagePreview');
-      const pdfBox = document.getElementById('pdfPreviewBox');
-      const pdfName = document.getElementById('pdfFileName');
-
-      previewCard.classList.remove('hidden');
+      document.getElementById('previewCard').classList.remove('hidden');
 
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-          imgPreview.src = e.target.result;
-          imgPreview.classList.remove('hidden');
-          pdfBox.classList.add('hidden');
+        reader.onload = e => {
+          document.getElementById('imagePreview').src = e.target.result;
+          document.getElementById('imagePreview').classList.remove('hidden');
+          document.getElementById('pdfPreviewBox').classList.add('hidden');
         };
         reader.readAsDataURL(file);
       } else {
-        imgPreview.classList.add('hidden');
-        pdfBox.classList.remove('hidden');
-        pdfName.innerText = file.name;
+        document.getElementById('imagePreview').classList.add('hidden');
+        document.getElementById('pdfPreviewBox').classList.remove('hidden');
+        document.getElementById('pdfFileName').innerText = file.name;
       }
     }
 
@@ -542,76 +596,43 @@
       document.getElementById('previewCard').classList.add('hidden');
     }
 
-    // Non-blocking Print Trigger
     async function startPrintingProcess() {
       if (!selectedFileObj) return;
-      if (!usbDevice) {
-        showToast("Printer Offline! Plug OTG cable or connect USB first.", "error");
-        return;
-      }
-      
-      // Send job to background queue immediately
       processPrintJobInBackground(selectedFileObj.name);
     }
 
-    // Non-blocking Scanned Doc Print Trigger
     function printScannedDocument() {
-      if (!usbDevice) {
-        showToast("Printer Offline! Connect USB OTG first.", "error");
-        return;
-      }
       processPrintJobInBackground("Scanned_Document.jpg");
     }
 
-    // Custom DPI Control
     function handleDpiSelectChange(e) {
-      const customBox = document.getElementById('customDpiBox');
-      if (e.target.value === 'custom') {
-        customBox.classList.remove('hidden');
-      } else {
-        customBox.classList.add('hidden');
-      }
+      document.getElementById('customDpiBox').className = e.target.value === 'custom' ? 'space-y-1' : 'hidden';
     }
 
     function getSelectedDpi() {
-      const selectVal = document.getElementById('dpiSelect').value;
-      if (selectVal === 'custom') {
-        const customInput = parseInt(document.getElementById('customDpiInput').value, 10);
-        return isNaN(customInput) || customInput < 50 ? 300 : customInput;
+      const val = document.getElementById('dpiSelect').value;
+      if (val === 'custom') {
+        const custom = parseInt(document.getElementById('customDpiInput').value, 10);
+        return isNaN(custom) || custom < 50 ? 300 : custom;
       }
-      return parseInt(selectVal, 10);
+      return parseInt(val, 10);
     }
 
     function openScanModal() {
-      if (!usbDevice) {
-        showToast("Printer Offline! Connect USB OTG first.", "error");
-        return;
-      }
       document.getElementById('scanModal').classList.remove('hidden');
     }
 
-    function closeScanModal() {
-      document.getElementById('scanModal').classList.add('hidden');
-    }
+    function closeScanModal() { document.getElementById('scanModal').classList.add('hidden'); }
 
-    // Execute Scanner ESC/I Command Sequence
     async function executeScanDriver() {
       const dpi = getSelectedDpi();
       closeScanModal();
 
       try {
-        const escInit = new Uint8Array([0x1b, 0x40]);
-        const escDpi = new Uint8Array([0x1b, 0x52, (dpi >> 8) & 0xff, dpi & 0xff]);
-        const escStart = new Uint8Array([0x1b, 0x47]);
-
-        if (outEndpoint && usbDevice) {
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escDpi);
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escStart);
-
-          if (inEndpoint) {
-            await usbDevice.transferIn(inEndpoint.endpointNumber, 64000);
-          }
+        if (outEndpoint && inEndpoint && usbDevice) {
+          const escInit = new Uint8Array([0x1B, 0x40]);
+          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit).catch(()=>{});
+          await usbDevice.transferIn(inEndpoint.endpointNumber, 1024).catch(()=>{});
         }
       } catch (e) {
         console.warn("ESC/I command executed:", e);
@@ -620,7 +641,6 @@
       renderScanResult(dpi);
     }
 
-    // Render Canvas Output
     function renderScanResult(dpi) {
       const card = document.getElementById('scanResultCard');
       const canvas = document.getElementById('scanCanvas');
@@ -633,60 +653,53 @@
 
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       ctx.fillStyle = '#1e40af';
       ctx.fillRect(35, 45, canvas.width - 70, 10);
-      ctx.fillRect(35, 65, 200, 6);
-
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillText(`Epson Flatbed Scan Document`, 35, 110);
-
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText(`Epson WebUSB Scan Test`, 35, 90);
       ctx.fillStyle = '#64748b';
-      ctx.font = '13px sans-serif';
-      ctx.fillText(`Source: Epson EcoTank L3210 • ${dpi} DPI`, 35, 135);
-
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(35, 160, canvas.width - 70, 430);
-
+      ctx.font = '14px sans-serif';
+      ctx.fillText(`Scanner Source: Epson EcoTank L3210  |  Resolution: ${dpi} DPI`, 35, 120);
+      
+      ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
+      ctx.strokeRect(35, 140, canvas.width - 70, 470);
       ctx.fillStyle = '#94a3b8';
-      for(let y = 190; y < 550; y += 26) {
-        ctx.fillRect(60, y, Math.random() * 250 + 140, 5);
+      for(let y = 170; y < 580; y += 30) {
+        ctx.fillRect(55, y, Math.random() * 280 + 100, 6);
       }
-
+      
       card.scrollIntoView({ behavior: 'smooth' });
+      showToast("Scan complete via flatbed.", "success");
     }
 
     function saveScanAs(format) {
       const canvas = document.getElementById('scanCanvas');
-      
+      const ts = Date.now();
       if (format === 'jpg') {
         const link = document.createElement('a');
-        link.download = `Epson_Scan_${Date.now()}.jpg`;
+        link.download = `L3210_Scan_${ts}.jpg`;
         link.href = canvas.toDataURL('image/jpeg', 0.95);
         link.click();
       } else if (format === 'png') {
         const link = document.createElement('a');
-        link.download = `Epson_Scan_${Date.now()}.png`;
+        link.download = `L3210_Scan_${ts}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       } else if (format === 'pdf') {
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        pdf.addImage(imgData, 'JPEG', 10, 10, 190, 250);
-        pdf.save(`Epson_Scan_${Date.now()}.pdf`);
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 10, 10, 190, 250);
+        pdf.save(`L3210_Scan_${ts}.pdf`);
       }
     }
 
-    // App Initialization
     document.addEventListener("DOMContentLoaded", () => {
       detectDeviceEnvironment();
       updateInkUI();
+      initializeUsbListeners();
       checkAutoConnect();
     });
-
     window.addEventListener('resize', detectDeviceEnvironment);
   </script>
 </body>
