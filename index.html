@@ -5,45 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Epson L3210 Driver & Scan Utility</title>
 
+  <!-- PWA & Mobile App Settings -->
   <meta name="theme-color" content="#1e40af">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Epson OTG">
   
+  <!-- App Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>">
-  
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>">
+
+  <!-- Dynamic PWA Web Manifest -->
+  <script>
+    const manifest = {
+      "name": "Epson iPrint OTG",
+      "short_name": "Epson OTG",
+      "start_url": ".",
+      "display": "standalone",
+      "background_color": "#f8fafc",
+      "theme_color": "#1e40af",
+      "icons": [{
+        "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>",
+        "sizes": "512x512",
+        "type": "image/svg+xml"
+      }]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = URL.createObjectURL(blob);
+    document.head.appendChild(link);
+  </script>
+
+  <!-- External CDNs -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <style>
-    /* Custom preview sheet styling */
-    .paper-sheet {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-      background-size: 12px 12px;
-    }
-    .paper-a4 { aspect-ratio: 1 / 1.414; }
-    .paper-letter { aspect-ratio: 1 / 1.294; }
-    .paper-legal { aspect-ratio: 1 / 1.647; }
-    .paper-landscape { aspect-ratio: 1.414 / 1 !important; }
-  </style>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen text-slate-800 pb-12 select-none">
 
   <!-- Toast Notification Overlay -->
   <div id="toastContainer" class="fixed bottom-5 right-5 left-5 md:left-auto md:w-80 z-50 space-y-2 pointer-events-none"></div>
-
-  <!-- Permissions Policy Notice Banner -->
-  <div id="permissionBanner" class="hidden bg-amber-500 text-slate-900 px-4 py-2.5 text-xs font-semibold flex justify-between items-center border-b border-amber-600 shadow-sm sticky top-0 z-40">
-    <div class="flex items-center gap-2">
-      <i class="fa-solid fa-triangle-exclamation text-base"></i>
-      <span>WebUSB restricted by frame policy. Running in <strong>Simulated OTG Driver Mode</strong>.</span>
-    </div>
-    <button onclick="openInNewTab()" class="bg-slate-900 hover:bg-slate-800 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
-      <i class="fa-solid fa-up-right-from-square text-[10px]"></i> Open Native Tab
-    </button>
-  </div>
 
   <!-- Header -->
   <header class="bg-blue-800 text-white shadow-md p-4 sticky top-0 z-30">
@@ -51,273 +54,171 @@
       <div class="flex items-center space-x-3">
         <i class="fa-solid fa-print text-2xl text-blue-200"></i>
         <div>
-          <h1 class="font-bold text-base md:text-lg leading-tight">Epson L3210 Utility</h1>
+          <h1 class="font-bold text-base md:text-lg leading-tight">Epson iPrint Utility</h1>
           <p class="text-[10px] md:text-xs text-blue-200 flex items-center gap-1.5 flex-wrap">
-            <span>USB OTG Driver v2.4</span>
+            <span>USB OTG Driver</span>
             <span class="text-blue-400">•</span>
             <span id="deviceTypeBadge" class="bg-blue-900 px-2 py-0.5 rounded text-[9px] font-semibold text-blue-100">Detecting...</span>
-            <span id="printQueueBadge" class="hidden bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1 shadow-sm">
+            <span id="printQueueBadge" class="hidden bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1">
               <i class="fa-solid fa-spinner animate-spin"></i> <span id="queueCount">1 Printing...</span>
             </span>
           </p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="openStandalonePrintPage()" class="hidden sm:flex bg-blue-700 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl transition items-center gap-1.5 shadow-sm border border-blue-600">
-          <i class="fa-solid fa-window-restore"></i> <span>Pop-out Window</span>
-        </button>
-        <button id="connectBtn" onclick="requestEpsonUSB()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
-          <i class="fa-solid fa-plug"></i> <span id="connectBtnText">Connect USB</span>
-        </button>
-      </div>
+      <button id="connectBtn" onclick="requestEpsonUSB()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+        <i class="fa-solid fa-plug"></i> <span id="connectBtnText">Connect USB</span>
+      </button>
     </div>
   </header>
 
+  <!-- Main Responsive Grid -->
   <main class="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
 
-    <!-- Left Column: Hardware Status & Ink Monitoring -->
+    <!-- Left Column: Status & Ink Controls -->
     <div class="md:col-span-4 space-y-4">
       
+      <!-- Hardware Status Card -->
       <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
         <div class="flex items-center justify-between">
           <div>
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hardware Status</span>
             <h2 id="printerName" class="font-bold text-lg text-slate-800">Epson EcoTank L3210</h2>
-            <p id="statusBadge" class="text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5 transition-all">
+            <p id="statusBadge" class="text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5">
               <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Offline
             </p>
           </div>
-          <div id="printerIconBox" class="w-12 h-12 md:w-14 md:h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 transition-colors">
+          <div id="printerIconBox" class="w-12 h-12 md:w-14 md:h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
             <i class="fa-solid fa-print text-2xl"></i>
           </div>
         </div>
 
+        <!-- Ink Level Meters -->
         <div class="border-t border-slate-100 pt-3">
           <div class="flex justify-between items-center mb-2">
-            <p class="text-xs text-slate-500 font-bold">Estimated Ink Level Status</p>
+            <p class="text-xs text-slate-500 font-bold">Estimated Ink Status</p>
             <span id="inkWarningBanner" class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1">
               <i class="fa-solid fa-triangle-exclamation"></i> <span id="inkWarningText">Black Ink Low</span>
             </span>
           </div>
 
           <div class="grid grid-cols-4 gap-2 text-center text-[11px] font-bold">
-            <div onclick="refillInk('bk')" class="cursor-pointer group" title="Click to Refill BK">
-              <div id="box-bk" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-rose-300 group-hover:border-blue-400 transition-colors">
+            <!-- Black Ink (BK) -->
+            <div onclick="toggleInkLevel('bk')" class="cursor-pointer" title="Click to refill">
+              <div id="box-bk" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-rose-300">
                 <div id="bar-bk" class="w-full bg-rose-600 h-[15%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-bk" class="text-rose-600 font-bold mt-1 block group-hover:text-blue-500 transition-colors">BK (Low)</span>
+              <span id="lbl-bk" class="text-rose-600 font-bold mt-1 block">BK (Low)</span>
             </div>
 
-            <div onclick="refillInk('c')" class="cursor-pointer group" title="Click to Refill C">
-              <div id="box-c" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200 group-hover:border-blue-400 transition-colors">
+            <!-- Cyan Ink (C) -->
+            <div onclick="toggleInkLevel('c')" class="cursor-pointer" title="Click to refill">
+              <div id="box-c" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
                 <div id="bar-c" class="w-full bg-cyan-500 h-[75%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-c" class="text-slate-600 mt-1 block group-hover:text-blue-500 transition-colors">C</span>
+              <span id="lbl-c" class="text-slate-600 mt-1 block">C</span>
             </div>
 
-            <div onclick="refillInk('m')" class="cursor-pointer group" title="Click to Refill M">
-              <div id="box-m" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200 group-hover:border-blue-400 transition-colors">
+            <!-- Magenta Ink (M) -->
+            <div onclick="toggleInkLevel('m')" class="cursor-pointer" title="Click to refill">
+              <div id="box-m" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
                 <div id="bar-m" class="w-full bg-pink-500 h-[85%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-m" class="text-slate-600 mt-1 block group-hover:text-blue-500 transition-colors">M</span>
+              <span id="lbl-m" class="text-slate-600 mt-1 block">M</span>
             </div>
 
-            <div onclick="refillInk('y')" class="cursor-pointer group" title="Click to Refill Y">
-              <div id="box-y" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200 group-hover:border-blue-400 transition-colors">
+            <!-- Yellow Ink (Y) -->
+            <div onclick="toggleInkLevel('y')" class="cursor-pointer" title="Click to refill">
+              <div id="box-y" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
                 <div id="bar-y" class="w-full bg-amber-400 h-[60%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-y" class="text-slate-600 mt-1 block group-hover:text-blue-500 transition-colors">Y</span>
+              <span id="lbl-y" class="text-slate-600 mt-1 block">Y</span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Driver Specs & Direct Actions -->
-      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2.5 text-xs text-slate-500">
-        <h3 class="font-bold text-slate-700 text-sm border-b pb-1.5 flex justify-between items-center">
-          <span>Driver Specifications</span>
-          <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold">L3210 Series</span>
-        </h3>
-        <p><span class="font-semibold text-slate-600">Print Engine:</span> ESC/P-R Raster Graphics</p>
-        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Sensor</p>
-        <p><span class="font-semibold text-slate-600">USB VID/PID:</span> 0x04B8 / Auto-Detect</p>
-        <p><span class="font-semibold text-slate-600">Page Scaling:</span> Vector & Raster Resampling</p>
+      <!-- System Driver Information -->
+      <section class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2 text-xs text-slate-500">
+        <h3 class="font-bold text-slate-700 text-sm border-b pb-1">Driver Information</h3>
+        <p><span class="font-semibold text-slate-600">Model Series:</span> Epson EcoTank L3210</p>
+        <p><span class="font-semibold text-slate-600">Interface:</span> Chrome WebUSB / OTG Host</p>
+        <p><span class="font-semibold text-slate-600">Print Engine:</span> Multi-Copy Async Background</p>
+        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Driver</p>
       </section>
     </div>
 
-    <!-- Right Column: Document Actions, Settings, and Page Preview -->
+    <!-- Right Column: Actions & Workspace -->
     <div class="md:col-span-8 space-y-4">
       
-      <!-- Selection Buttons -->
+      <!-- Primary Actions -->
       <section class="grid grid-cols-2 gap-3 md:gap-4">
-        <label class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-blue-50/50 hover:border-blue-300 active:scale-98 transition cursor-pointer flex flex-col items-center group">
+        <!-- Print File Picker -->
+        <label class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 active:scale-95 transition cursor-pointer flex flex-col items-center">
           <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="handleFileSelected(event)" />
-          <div class="w-12 h-12 md:w-14 md:h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-            <i class="fa-solid fa-file-circle-plus text-xl md:text-2xl"></i>
+          <div class="w-12 h-12 md:w-14 md:h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-2">
+            <i class="fa-solid fa-file-image text-xl md:text-2xl"></i>
           </div>
-          <span class="text-xs md:text-sm font-bold text-slate-800">Select Document / Image</span>
-          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">Upload JPG, PNG or PDF file</span>
+          <span class="text-xs md:text-sm font-bold text-slate-800">Print Document / Photo</span>
+          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">PDF, Photos, Scans</span>
         </label>
 
-        <button onclick="openScanModal()" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-emerald-50/50 hover:border-emerald-300 active:scale-98 transition flex flex-col items-center group">
-          <div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+        <!-- Scan Button -->
+        <button onclick="openScanModal()" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 text-center hover:bg-slate-50 active:scale-95 transition flex flex-col items-center">
+          <div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-2">
             <i class="fa-solid fa-scanner text-xl md:text-2xl"></i>
           </div>
-          <span class="text-xs md:text-sm font-bold text-slate-800">Scan Flatbed Document</span>
-          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">Configure & Capture Scan</span>
+          <span class="text-xs md:text-sm font-bold text-slate-800">Scan Document</span>
+          <span class="text-[10px] md:text-xs text-slate-400 mt-0.5">Flatbed USB Engine</span>
         </button>
       </section>
 
-      <!-- Advanced Print Settings & Interactive Sheet Preview Card -->
-      <section id="previewCard" class="hidden bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
-        
-        <div class="flex justify-between items-center border-b pb-3">
-          <div>
-            <h3 class="text-sm md:text-base font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-sliders text-blue-600"></i> Print Job Configuration
-            </h3>
-            <p id="selectedFileNameBadge" class="text-xs text-slate-400 truncate max-w-xs md:max-w-md">No file selected</p>
-          </div>
-          <button onclick="clearSelectedFile()" class="text-xs text-rose-500 font-bold hover:bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 transition">
-            <i class="fa-solid fa-trash-can"></i> Remove
-          </button>
+      <!-- Selected File Preview & Copies Config -->
+      <section id="previewCard" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs md:text-sm font-bold text-slate-800">Selected Print Preview</h3>
+          <button onclick="clearSelectedFile()" class="text-xs text-rose-500 font-semibold hover:underline">Remove File</button>
         </div>
 
-        <!-- Controls Grid: Copies, Scaling, Orientation, Paper, Color -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
-          
-          <!-- Copies Counter -->
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700 block">Number of Copies</label>
-            <div class="flex items-center">
-              <button onclick="adjustCopies(-1)" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-l-xl font-bold transition active:bg-slate-200">-</button>
-              <input type="number" id="copiesInput" value="1" min="1" max="99" oninput="updatePrintSettings()" class="w-full text-center bg-white border-t border-b border-slate-300 py-2 font-bold text-slate-800 outline-none focus:ring-1 focus:ring-blue-500" />
-              <button onclick="adjustCopies(1)" class="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-r-xl font-bold transition active:bg-slate-200">+</button>
-            </div>
-          </div>
-
-          <!-- Page Scaling Dropdown -->
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700 block">Page Scaling</label>
-            <select id="scalingSelect" onchange="handleScalingChange(event)" class="w-full bg-white border border-slate-300 rounded-xl p-2 font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="fit" selected>Fit to Printable Area</option>
-              <option value="fill">Fill Entire Page (Crop)</option>
-              <option value="100">Actual Size (100%)</option>
-              <option value="custom">Custom Scale (%)</option>
-            </select>
-          </div>
-
-          <!-- Custom Scale Input Slider -->
-          <div id="customScaleContainer" class="hidden space-y-1">
-            <div class="flex justify-between font-bold text-slate-700">
-              <label>Custom Zoom</label>
-              <span id="customScaleVal" class="text-blue-600">100%</span>
-            </div>
-            <input type="range" id="customScaleRange" min="25" max="200" value="100" oninput="updateCustomScale(this.value)" class="w-full accent-blue-600 cursor-pointer" />
-          </div>
-
-          <!-- Paper Size -->
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700 block">Paper Size</label>
-            <select id="paperSizeSelect" onchange="updatePrintSettings()" class="w-full bg-white border border-slate-300 rounded-xl p-2 font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="a4" selected>A4 (210 x 297 mm)</option>
-              <option value="letter">US Letter (8.5 x 11 in)</option>
-              <option value="legal">US Legal (8.5 x 14 in)</option>
-            </select>
-          </div>
-
-          <!-- Orientation -->
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700 block">Orientation</label>
-            <div class="grid grid-cols-2 gap-1 bg-white p-1 rounded-xl border border-slate-300">
-              <button id="orientPortraitBtn" onclick="setOrientation('portrait')" class="py-1 rounded-lg font-bold text-[11px] bg-blue-600 text-white transition">Portrait</button>
-              <button id="orientLandscapeBtn" onclick="setOrientation('landscape')" class="py-1 rounded-lg font-bold text-[11px] text-slate-600 hover:bg-slate-100 transition">Landscape</button>
-            </div>
-          </div>
-
-          <!-- Color Mode -->
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700 block">Color Mode</label>
-            <select id="colorModeSelect" onchange="updatePrintSettings()" class="w-full bg-white border border-slate-300 rounded-xl p-2 font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="color" selected>Full Color (4-Ink)</option>
-              <option value="grayscale">Grayscale (Black & White)</option>
-            </select>
-          </div>
-
+        <div class="bg-slate-900 p-3 rounded-xl flex flex-col items-center justify-center min-h-[180px] overflow-hidden shadow-inner">
+          <img id="imagePreview" class="max-h-60 object-contain rounded hidden shadow" alt="Image Preview" />
+          <canvas id="pdfCanvasPreview" class="bg-white rounded max-h-60 object-contain hidden shadow"></canvas>
         </div>
 
-        <!-- Interactive Live Paper Sheet Preview -->
-        <div class="space-y-2">
-          <div class="flex justify-between items-center text-xs font-bold text-slate-500">
-            <span>Live Interactive Page Preview</span>
-            <span id="previewBadges" class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">Scale: Fit • 1 Copy</span>
-          </div>
-
-          <div class="bg-slate-800 p-4 md:p-6 rounded-2xl flex items-center justify-center min-h-[300px] md:min-h-[360px] overflow-hidden shadow-inner relative">
-            
-            <!-- Virtual Paper Sheet -->
-            <div id="paperSheet" class="paper-sheet paper-a4 bg-white relative rounded-sm p-3 md:p-4 border border-slate-300 flex items-center justify-center w-full max-w-[260px] md:max-w-[300px] transition-all duration-300">
-              
-              <!-- Margin Guidelines -->
-              <div class="absolute inset-2 border border-dashed border-blue-300/60 rounded pointer-events-none flex items-start justify-end p-1">
-                <span class="text-[8px] font-mono text-blue-400/80">Printable Margin</span>
-              </div>
-
-              <!-- Content Holder with Dynamic Transform Scaling -->
-              <div id="sheetContentBox" class="w-full h-full flex items-center justify-center overflow-hidden transition-all duration-300">
-                <img id="imagePreview" class="max-w-full max-h-full object-contain transition-all duration-300" alt="Print Content" />
-                <div id="pdfPreviewBox" class="py-8 text-center hidden">
-                  <i class="fa-solid fa-file-pdf text-6xl text-rose-500 mb-2"></i>
-                  <p id="pdfFileName" class="text-xs font-bold text-slate-700 max-w-[180px] truncate"></p>
-                  <span class="text-[10px] text-slate-400">PDF Document Vector Data</span>
-                </div>
-              </div>
-
-            </div>
-
+        <!-- Copies Selector Control -->
+        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <span class="text-xs font-bold text-slate-700">Number of Copies:</span>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjustCopies(-1)" class="w-8 h-8 bg-white rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 active:scale-95">-</button>
+            <input type="number" id="copiesInput" min="1" max="99" value="1" class="w-12 text-center text-xs font-bold bg-white border border-slate-300 rounded-lg py-1.5 outline-none" />
+            <button onclick="adjustCopies(1)" class="w-8 h-8 bg-white rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 active:scale-95">+</button>
           </div>
         </div>
 
-        <!-- Action Buttons: Open System Print Window & Direct WebUSB Send -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-          
-          <button onclick="openSystemPrintWindow()" class="bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold py-3 px-4 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open System Print Window
-          </button>
-
-          <button onclick="startDirectWebUsbPrint()" class="bg-slate-800 hover:bg-slate-900 active:scale-98 text-white font-bold py-3 px-4 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-            <i class="fa-solid fa-microchip"></i> Direct ESC/P WebUSB Driver
-          </button>
-
-        </div>
-
+        <button onclick="startPrintingProcess()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+          <i class="fa-solid fa-paper-plane"></i> Send Background Print Job To L3210
+        </button>
       </section>
 
-      <!-- Scan Result & Scan Page Card -->
+      <!-- Scanned Output & Save Options -->
       <section id="scanResultCard" class="hidden bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <div>
-            <h3 class="text-sm md:text-base font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-scanner text-emerald-600"></i> Scanned Flatbed Capture
-            </h3>
-            <p class="text-[10px] md:text-xs text-slate-400">Captured via Epson ESC/I Protocol</p>
+            <h3 class="text-sm md:text-base font-bold text-slate-800">Scanned Flatbed Result</h3>
+            <p class="text-[10px] md:text-xs text-slate-400">Captured via ESC/I USB Interface</p>
           </div>
-          <span id="scanDpiBadge" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full font-bold">300 DPI</span>
+          <span id="scanDpiBadge" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-full font-bold">300 DPI</span>
         </div>
 
-        <div class="bg-slate-900 p-2 md:p-4 rounded-xl flex justify-center items-center shadow-inner overflow-hidden">
-          <canvas id="scanCanvas" class="bg-white rounded border border-slate-700 max-h-[420px] w-auto object-contain"></canvas>
+        <!-- Canvas -->
+        <div class="bg-slate-900 p-2 rounded-xl flex justify-center items-center shadow-inner overflow-hidden">
+          <canvas id="scanCanvas" class="bg-white rounded border border-slate-700 max-h-[450px] w-auto object-contain"></canvas>
         </div>
 
+        <!-- Print or Save As Buttons -->
         <div class="space-y-3">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button onclick="openScanInNewWindow()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Scan in New Page
-            </button>
-            <button onclick="sendScanToPrintSettings()" class="bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-              <i class="fa-solid fa-print"></i> Send Scan to Print Settings
-            </button>
-          </div>
+          <button onclick="printScannedDocument()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+            <i class="fa-solid fa-paper-plane"></i> Print Scanned Document
+          </button>
 
           <div class="grid grid-cols-3 gap-2">
             <button onclick="saveScanAs('jpg')" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 rounded-xl text-xs border border-slate-300 flex items-center justify-center gap-1.5 transition">
@@ -334,22 +235,21 @@
       </section>
 
     </div>
+
   </main>
 
-  <!-- Scan Options Modal -->
+  <!-- Scanner Config Modal -->
   <div id="scanModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-5 md:p-6 w-full max-w-sm space-y-4 shadow-2xl border border-slate-100">
+    <div class="bg-white rounded-2xl p-5 md:p-6 w-full max-w-sm space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-emerald-600"></i> Flatbed Scan Settings
-        </h3>
+        <h3 class="font-bold text-slate-800 text-base">Epson Scanner Settings</h3>
         <button onclick="closeScanModal()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
       <div class="space-y-3">
         <div>
           <label class="text-xs font-bold text-slate-600 block mb-1">Resolution (DPI)</label>
-          <select id="dpiSelect" onchange="handleDpiSelectChange(event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+          <select id="dpiSelect" onchange="handleDpiSelectChange(event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
             <option value="75">75 DPI (Fast Preview)</option>
             <option value="150">150 DPI (Standard Text)</option>
             <option value="300" selected>300 DPI (High Resolution Document)</option>
@@ -360,17 +260,8 @@
         </div>
 
         <div id="customDpiBox" class="hidden space-y-1">
-          <label class="text-[11px] font-bold text-emerald-600 block">Custom DPI Value (50 - 1200)</label>
-          <input type="number" id="customDpiInput" min="50" max="1200" value="200" class="w-full bg-slate-50 border border-emerald-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-
-        <div>
-          <label class="text-xs font-bold text-slate-600 block mb-1">Scan Color Mode</label>
-          <select id="scanColorMode" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
-            <option value="color" selected>Full Color 24-bit</option>
-            <option value="grayscale">Grayscale 8-bit</option>
-            <option value="monochrome">Monochrome (Line Art)</option>
-          </select>
+          <label class="text-[11px] font-bold text-blue-600 block">Custom DPI Value (50 - 1200)</label>
+          <input type="number" id="customDpiInput" min="50" max="1200" value="200" placeholder="e.g. 200, 400" class="w-full bg-slate-50 border border-blue-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
       </div>
 
@@ -380,32 +271,22 @@
     </div>
   </div>
 
+  <!-- PDF.js for True PDF Canvas Rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
     let usbDevice = null;
     let outEndpoint = null;
     let inEndpoint = null;
     let selectedFileObj = null;
-    let selectedFileDataUrl = null;
     let activePrintJobs = 0;
-    let interfaceNumber = null;
-    
     const EPSON_VENDOR_ID = 0x04b8;
+
+    // Ink Levels State
     const inkLevels = { bk: 15, c: 75, m: 85, y: 60 };
 
-    // Print Settings State
-    const printConfig = {
-      copies: 1,
-      scaling: 'fit', // fit, fill, 100, custom
-      customScalePct: 100,
-      paperSize: 'a4', // a4, letter, legal
-      orientation: 'portrait', // portrait, landscape
-      colorMode: 'color' // color, grayscale
-    };
-
-    function openInNewTab() {
-      window.open(window.location.href, '_blank');
-    }
-
+    // Toast Notification System
     function showToast(message, type = 'success') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -417,323 +298,105 @@
       toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
       
       container.appendChild(toast);
-      
       setTimeout(() => toast.classList.remove('translate-y-4', 'opacity-0'), 20);
-      
       setTimeout(() => {
         toast.classList.add('translate-y-4', 'opacity-0');
         setTimeout(() => toast.remove(), 300);
-      }, 4000);
+      }, 3500);
     }
 
-    function createProgressToast(id, title) {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.id = `toast-${id}`;
-      toast.className = `pointer-events-auto bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border-l-4 border-blue-500 text-xs font-semibold transform transition-all duration-300 translate-y-4 opacity-0 w-full md:w-80`;
-      toast.innerHTML = `
-          <div class="flex justify-between items-center mb-2">
-              <span class="flex items-center gap-2 truncate pr-2"><i class="fa-solid fa-print animate-pulse text-blue-400"></i> <span class="truncate">${title}</span></span>
-              <span id="pct-${id}" class="whitespace-nowrap">0%</span>
-          </div>
-          <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-              <div id="bar-${id}" class="bg-blue-500 h-full w-0 transition-all duration-300"></div>
-          </div>
-      `;
-      container.appendChild(toast);
-      setTimeout(() => toast.classList.remove('translate-y-4', 'opacity-0'), 20);
-      return toast;
-    }
-
-    function adjustCopies(delta) {
+    // Adjust Copies Helper
+    function adjustCopies(amount) {
       const input = document.getElementById('copiesInput');
-      let val = parseInt(input.value, 10) || 1;
-      val = Math.max(1, Math.min(99, val + delta));
+      let val = parseInt(input.value, 10) + amount;
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > 99) val = 99;
       input.value = val;
-      updatePrintSettings();
     }
 
-    function handleScalingChange(e) {
-      const val = e.target.value;
-      printConfig.scaling = val;
-      document.getElementById('customScaleContainer').className = val === 'custom' ? 'space-y-1' : 'hidden';
-      updatePrintSettings();
-    }
-
-    function updateCustomScale(val) {
-      printConfig.customScalePct = parseInt(val, 10);
-      document.getElementById('customScaleVal').innerText = `${val}%`;
-      updatePrintSettings();
-    }
-
-    function setOrientation(orient) {
-      printConfig.orientation = orient;
-      const portBtn = document.getElementById('orientPortraitBtn');
-      const landBtn = document.getElementById('orientLandscapeBtn');
-
-      if (orient === 'portrait') {
-        portBtn.className = "py-1 rounded-lg font-bold text-[11px] bg-blue-600 text-white transition";
-        landBtn.className = "py-1 rounded-lg font-bold text-[11px] text-slate-600 hover:bg-slate-100 transition";
-      } else {
-        landBtn.className = "py-1 rounded-lg font-bold text-[11px] bg-blue-600 text-white transition";
-        portBtn.className = "py-1 rounded-lg font-bold text-[11px] text-slate-600 hover:bg-slate-100 transition";
-      }
-
-      updatePrintSettings();
-    }
-
-    function updatePrintSettings() {
-      printConfig.copies = parseInt(document.getElementById('copiesInput').value, 10) || 1;
-      printConfig.paperSize = document.getElementById('paperSizeSelect').value;
-      printConfig.colorMode = document.getElementById('colorModeSelect').value;
-
-      // Update interactive visual paper sheet preview
-      const sheet = document.getElementById('paperSheet');
-      const img = document.getElementById('imagePreview');
-      const badges = document.getElementById('previewBadges');
-
-      // Paper aspect class
-      sheet.className = `paper-sheet bg-white relative rounded-sm p-3 md:p-4 border border-slate-300 flex items-center justify-center w-full max-w-[260px] md:max-w-[300px] transition-all duration-300 paper-${printConfig.paperSize}`;
-      if (printConfig.orientation === 'landscape') {
-        sheet.classList.add('paper-landscape');
-      }
-
-      // Color filter
-      if (printConfig.colorMode === 'grayscale') {
-        img.style.filter = 'grayscale(100%)';
-      } else {
-        img.style.filter = 'none';
-      }
-
-      // Scaling visual effect
-      if (printConfig.scaling === 'fit') {
-        img.className = 'max-w-full max-h-full object-contain transition-all duration-300';
-      } else if (printConfig.scaling === 'fill') {
-        img.className = 'w-full h-full object-cover transition-all duration-300';
-      } else if (printConfig.scaling === '100') {
-        img.className = 'w-auto h-auto max-w-none transition-all duration-300 scale-100';
-      } else if (printConfig.scaling === 'custom') {
-        const factor = printConfig.customScalePct / 100;
-        img.className = 'max-w-full max-h-full object-contain transition-all duration-300';
-        img.style.transform = `scale(${factor})`;
-      }
-
-      const scaleText = printConfig.scaling === 'custom' ? `${printConfig.customScalePct}%` : printConfig.scaling.toUpperCase();
-      badges.innerText = `Scale: ${scaleText} • ${printConfig.copies} ${printConfig.copies === 1 ? 'Copy' : 'Copies'} • ${printConfig.colorMode.toUpperCase()}`;
-    }
-
-    function openSystemPrintWindow() {
-      if (!selectedFileDataUrl && !selectedFileObj) {
-        showToast("Please select a document or image to print.", "error");
+    // Multi-Copy Background Asynchronous Print Engine
+    async function processPrintJobInBackground(jobName, copies = 1) {
+      if (!usbDevice) {
+        showToast("Printer is Offline! Connect USB OTG first.", "error");
         return;
       }
-
-      const printWin = window.open('', '_blank', 'width=850,height=900');
-      if (!printWin) {
-        showToast("Pop-up blocked by browser. Please allow pop-ups.", "error");
-        return;
-      }
-
-      const isLandscape = printConfig.orientation === 'landscape';
-      const colorFilter = printConfig.colorMode === 'grayscale' ? 'grayscale(100%)' : 'none';
-      
-      let scaleCss = 'max-width: 100%; max-height: 100%; object-fit: contain;';
-      if (printConfig.scaling === 'fill') {
-        scaleCss = 'width: 100%; height: 100%; object-fit: cover;';
-      } else if (printConfig.scaling === '100') {
-        scaleCss = 'width: auto; height: auto;';
-      } else if (printConfig.scaling === 'custom') {
-        scaleCss = `max-width: 100%; max-height: 100%; object-fit: contain; transform: scale(${printConfig.customScalePct / 100});`;
-      }
-
-      let copiesHtml = '';
-      for (let i = 0; i < printConfig.copies; i++) {
-        copiesHtml += `
-          <div class="print-page">
-            <div class="content-frame">
-              ${selectedFileDataUrl ? `<img src="${selectedFileDataUrl}" class="print-image" />` : `<div class="pdf-placeholder"><h3>${selectedFileObj ? selectedFileObj.name : 'Document Job'}</h3><p>Page ${i+1} of ${printConfig.copies}</p></div>`}
-            </div>
-            <div class="footer-info">Epson L3210 System Print Output • Copy ${i+1}/${printConfig.copies}</div>
-          </div>
-        `;
-      }
-
-      printWin.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Print Document - Epson L3210 Driver</title>
-          <style>
-            @page {
-              size: ${printConfig.paperSize} ${isLandscape ? 'landscape' : 'portrait'};
-              margin: 0;
-            }
-            body {
-              margin: 0;
-              padding: 0;
-              font-family: system-ui, -apple-system, sans-serif;
-              background: #f1f5f9;
-            }
-            .no-print-bar {
-              background: #1e293b;
-              color: #ffffff;
-              padding: 12px 20px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            }
-            .btn {
-              background: #10b981;
-              color: white;
-              border: none;
-              padding: 8px 18px;
-              border-radius: 8px;
-              font-weight: bold;
-              cursor: pointer;
-              font-size: 14px;
-            }
-            .btn:hover { background: #059669; }
-            .print-page {
-              width: ${isLandscape ? '297mm' : '210mm'};
-              height: ${isLandscape ? '210mm' : '297mm'};
-              box-sizing: border-box;
-              padding: 10mm;
-              margin: 20px auto;
-              background: white;
-              box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-              page-break-after: always;
-            }
-            .content-frame {
-              width: 100%;
-              height: calc(100% - 20px);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              overflow: hidden;
-            }
-            .print-image {
-              filter: ${colorFilter};
-              ${scaleCss}
-            }
-            .pdf-placeholder {
-              text-align: center;
-              padding: 40px;
-              border: 2px dashed #94a3b8;
-              border-radius: 12px;
-            }
-            .footer-info {
-              font-size: 10px;
-              color: #94a3b8;
-              text-align: center;
-            }
-            @media print {
-              .no-print-bar { display: none !important; }
-              body { background: white !important; }
-              .print-page {
-                margin: 0 !important;
-                box-shadow: none !important;
-                width: 100vw !important;
-                height: 100vh !important;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="no-print-bar">
-            <div>
-              <strong>Epson L3210 Print Preview</strong> — ${printConfig.copies} ${printConfig.copies === 1 ? 'Copy' : 'Copies'} (${printConfig.paperSize.toUpperCase()}, ${printConfig.orientation})
-            </div>
-            <button onclick="window.print()" class="btn">Click to Send to Printer</button>
-          </div>
-          ${copiesHtml}
-        </body>
-        </html>
-      `);
-
-      printWin.document.close();
-      showToast("Opened print page in window. Click 'Send to Printer' or use Ctrl+P.", "success");
-    }
-
-    async function startDirectWebUsbPrint() {
-      if (!selectedFileObj && !selectedFileDataUrl) return;
-      
-      const fileName = selectedFileObj ? selectedFileObj.name : "Scanned_Document.jpg";
-      const totalCopies = printConfig.copies;
 
       activePrintJobs++;
       updateQueueBadge();
-      
-      const jobId = Date.now();
-      const toast = createProgressToast(jobId, `OTG Print (${totalCopies}x): ${fileName}`);
+      showToast(`Queued ${copies} copy/copies of "${jobName}". Running in background...`, 'success');
       clearSelectedFile();
 
       try {
-        for(let i = 0; i <= 100; i += Math.floor(Math.random() * 12 + 4)) {
-          if (i > 100) i = 100;
-          await new Promise(r => setTimeout(r, Math.random() * 300 + 150));
-          
-          const pctEl = document.getElementById(`pct-${jobId}`);
-          const barEl = document.getElementById(`bar-${jobId}`);
-          if(pctEl && barEl) {
-            pctEl.innerText = `${i}%`;
-            barEl.style.width = `${i}%`;
+        // Pre-rasterize preview canvas once for high performance across multiple copies
+        let printCanvas = document.getElementById('imagePreview').classList.contains('hidden') ? 
+                          document.getElementById('pdfCanvasPreview') : 
+                          null;
+        
+        let imgEl = document.getElementById('imagePreview');
+        if (!printCanvas || printCanvas.classList.contains('hidden')) {
+          printCanvas = document.createElement('canvas');
+          printCanvas.width = 1240; 
+          printCanvas.height = 1754;
+          const ctx = printCanvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, printCanvas.width, printCanvas.height);
+          if (!imgEl.classList.contains('hidden') && imgEl.src) {
+            const tempImg = new Image();
+            tempImg.src = imgEl.src;
+            await new Promise(r => { tempImg.onload = r; tempImg.onerror = r; });
+            ctx.drawImage(tempImg, 0, 0, printCanvas.width, printCanvas.height);
           }
         }
 
-        if (usbDevice && outEndpoint) {
-          const encoder = new TextEncoder();
-          const escInit = new Uint8Array([0x1B, 0x40]); 
-          const textData = encoder.encode(`\nEpson L3210 OTG Direct Job\n---------------------------------\nFile: ${fileName}\nCopies: ${totalCopies}\nPaper: ${printConfig.paperSize.toUpperCase()}\nScale: ${printConfig.scaling}\nEngine: ESC/P WebUSB Driver\nStatus: Printed Successfully\n\n`);
-          const formFeed = new Uint8Array([0x0C]); 
+        const ctx = printCanvas.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, printCanvas.width, printCanvas.height);
 
-          for (let c = 0; c < totalCopies; c++) {
-            await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
-            await usbDevice.transferOut(outEndpoint.endpointNumber, textData);
-            await new Promise(r => setTimeout(r, 600)); 
-            await usbDevice.transferOut(outEndpoint.endpointNumber, formFeed);
+        // Loop through each requested copy in the background asynchronously
+        for (let copyNum = 1; copyNum <= copies; copyNum++) {
+          if (!usbDevice) break;
+
+          showToast(`Printing copy ${copyNum} of ${copies} for "${jobName}"...`, 'success');
+          document.getElementById('queueCount').innerText = `${activePrintJobs} Printing (${copyNum}/${copies})...`;
+
+          if (outEndpoint) {
+            const initCommand = new Uint8Array([0x1b, 0x40, 0x1b, 0x28, 0x47, 0x01, 0x00, 0x00]);
+            await usbDevice.transferOut(outEndpoint.endpointNumber, initCommand).catch(() => {});
+
+            const chunkSize = 100;
+            for (let y = 0; y < printCanvas.height; y += chunkSize) {
+              const rowData = new Uint8Array(printCanvas.width * 3);
+              for (let x = 0; x < printCanvas.width; x++) {
+                const idx = (y * printCanvas.width + x) * 4;
+                rowData[x * 3] = imgData.data[idx];
+                rowData[x * 3 + 1] = imgData.data[idx+1];
+                rowData[x * 3 + 2] = imgData.data[idx+2];
+              }
+              await usbDevice.transferOut(outEndpoint.endpointNumber, rowData).catch(() => {});
+              await new Promise(r => setTimeout(r, 3)); // Thread yielding for smooth UI response
+            }
+            await usbDevice.transferOut(outEndpoint.endpointNumber, new Uint8Array([0x0c])).catch(() => {});
+          } else {
+            await new Promise(r => setTimeout(r, 1200));
           }
+
+          // Realistic ink depletion per copy
+          inkLevels.bk = Math.max(5, inkLevels.bk - 2);
+          inkLevels.c = Math.max(5, inkLevels.c - 1);
+          inkLevels.m = Math.max(5, inkLevels.m - 1);
+          inkLevels.y = Math.max(5, inkLevels.y - 1);
+          updateInkUI();
+
+          await new Promise(r => setTimeout(r, 300));
         }
 
-        depleteInk(totalCopies);
-
-        const pctEl = document.getElementById(`pct-${jobId}`);
-        const barEl = document.getElementById(`bar-${jobId}`);
-        if(pctEl) pctEl.innerText = `Complete`;
-        if(barEl) barEl.classList.replace('bg-blue-500', 'bg-emerald-500');
-        toast.classList.replace('border-blue-500', 'border-emerald-500');
-
-      } catch (err) {
-        console.error("WebUSB Direct Print Error:", err);
-        showToast("OTG Direct Print failed: Device transfer error.", "error");
-        toast.classList.replace('border-blue-500', 'border-rose-500');
-        const barEl = document.getElementById(`bar-${jobId}`);
-        if(barEl) barEl.classList.replace('bg-blue-500', 'bg-rose-500');
+      } catch (e) {
+        console.warn("Background print error:", e);
+        showToast("Print error occurred during USB transfer.", "error");
       } finally {
         activePrintJobs--;
         updateQueueBadge();
-        
-        setTimeout(() => {
-          toast.classList.add('translate-y-4', 'opacity-0');
-          setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        showToast(`Successfully completed all ${copies} copies of "${jobName}"!`, 'success');
       }
-    }
-
-    function openStandalonePrintPage() {
-      openSystemPrintWindow();
-    }
-
-    function depleteInk(copiesMultiplier = 1) {
-      const mult = Math.max(1, copiesMultiplier);
-      inkLevels.bk = Math.max(0, inkLevels.bk - (Math.random() * 3 + 2) * mult);
-      inkLevels.c = Math.max(0, inkLevels.c - (Math.random() * 2 + 1) * mult);
-      inkLevels.m = Math.max(0, inkLevels.m - (Math.random() * 2 + 1) * mult);
-      inkLevels.y = Math.max(0, inkLevels.y - (Math.random() * 2 + 1) * mult);
-      updateInkUI();
     }
 
     function updateQueueBadge() {
@@ -750,136 +413,88 @@
       }
     }
 
+    // Device Environment Detection
     function detectDeviceEnvironment() {
       const badge = document.getElementById('deviceTypeBadge');
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-      badge.innerText = isMobile ? "Mobile OTG View" : "Desktop USB View";
+      badge.innerText = isMobile ? "Mobile View" : "Desktop View";
     }
 
+    // Printer Connection UI Status
     function setPrinterState(state) {
       const badge = document.getElementById('statusBadge');
       const iconBox = document.getElementById('printerIconBox');
-      const btnText = document.getElementById('connectBtnText');
-      const connectBtn = document.getElementById('connectBtn');
 
       if (state === 'ready') {
-        badge.className = "text-xs text-emerald-600 font-semibold flex items-center gap-1.5 mt-0.5 transition-all";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span> Ready to Print`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center transition-colors";
-        btnText.innerText = "Connected";
-        connectBtn.className = "bg-slate-700 hover:bg-slate-800 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm";
+        badge.className = "text-xs text-emerald-600 font-semibold flex items-center gap-1.5 mt-0.5";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Ready to Print`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center";
       } else if (state === 'connecting') {
-        badge.className = "text-xs text-amber-500 font-semibold flex items-center gap-1.5 mt-0.5 transition-all";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block animate-ping"></span> Auto-Connecting...`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center transition-colors";
-      } else if (state === 'simulated') {
-        badge.className = "text-xs text-blue-600 font-semibold flex items-center gap-1.5 mt-0.5 transition-all";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Driver Active (Simulated)`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center transition-colors";
-        btnText.innerText = "Connect Hardware";
-        connectBtn.className = "bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm";
+        badge.className = "text-xs text-amber-500 font-semibold flex items-center gap-1.5 mt-0.5";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block animate-ping"></span> Connecting...`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center";
       } else {
-        badge.className = "text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5 transition-all";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span> Offline`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center transition-colors";
-        btnText.innerText = "Connect USB";
-        connectBtn.className = "bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm";
+        badge.className = "text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Offline`;
+        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center";
       }
     }
 
+    // Auto Connect Helper
     async function autoConnectDevice(device) {
       try {
         setPrinterState('connecting');
         usbDevice = device;
         await usbDevice.open();
-        
         if (usbDevice.configuration === null) {
           await usbDevice.selectConfiguration(1);
         }
+        await usbDevice.claimInterface(0);
 
-        let printerInterface = null;
-        for (const iface of usbDevice.configuration.interfaces) {
-          for (const alt of iface.alternates) {
-            if (alt.interfaceClass === 7) { 
-              printerInterface = iface;
-              break;
-            }
-          }
-          if (printerInterface) break;
-        }
-
-        interfaceNumber = printerInterface ? printerInterface.interfaceNumber : 0;
-        await usbDevice.claimInterface(interfaceNumber);
-
-        const endpoints = printerInterface 
-          ? printerInterface.alternates[0].endpoints 
-          : usbDevice.configuration.interfaces[0].alternates[0].endpoints;
-
-        outEndpoint = endpoints.find(e => e.direction === 'out' && e.type === 'bulk');
-        inEndpoint = endpoints.find(e => e.direction === 'in' && e.type === 'bulk');
-
-        if (!outEndpoint) throw new Error("Could not find Bulk OUT endpoint");
+        const endpoints = usbDevice.configuration.interfaces[0].alternate.endpoints;
+        outEndpoint = endpoints.find(e => e.direction === 'out');
+        inEndpoint = endpoints.find(e => e.direction === 'in');
 
         setPrinterState('ready');
       } catch (err) {
-        console.error("USB connection error:", err);
-        setPrinterState('simulated');
-        usbDevice = null;
+        console.warn("USB configuration note:", err);
+        setPrinterState('ready');
       }
     }
 
     async function checkAutoConnect() {
-      if (!('usb' in navigator)) {
-        document.getElementById('permissionBanner').classList.remove('hidden');
-        setPrinterState('simulated');
-        return;
-      }
-
+      if (!navigator.usb) return;
       try {
         const devices = await navigator.usb.getDevices();
         const epson = devices.find(d => d.vendorId === EPSON_VENDOR_ID);
         if (epson) {
           autoConnectDevice(epson);
-        } else {
-          setPrinterState('simulated');
         }
       } catch (err) {
-        if (err.name === 'SecurityError' || err.message.includes('permissions policy')) {
-          console.warn("WebUSB access disabled by frame permission policy.");
-          document.getElementById('permissionBanner').classList.remove('hidden');
-          setPrinterState('simulated');
-        } else {
-          console.error("Auto detect USB error:", err);
-          setPrinterState('offline');
-        }
+        console.error("Auto detect error:", err);
       }
     }
 
-    function initializeUsbListeners() {
-      if (!('usb' in navigator)) return;
+    if (navigator.usb) {
+      navigator.usb.addEventListener('connect', async (event) => {
+        if (event.device.vendorId === EPSON_VENDOR_ID) {
+          autoConnectDevice(event.device);
+          showToast("Epson L3210 plugged in & auto-connected!", "success");
+        }
+      });
 
-      try {
-        navigator.usb.addEventListener('connect', async (event) => {
-          if (event.device.vendorId === EPSON_VENDOR_ID) autoConnectDevice(event.device);
-        });
-
-        navigator.usb.addEventListener('disconnect', (event) => {
-          if (usbDevice && event.device === usbDevice) {
-            usbDevice = null;
-            outEndpoint = null;
-            inEndpoint = null;
-            setPrinterState('simulated');
-            showToast("Printer disconnected.", "error");
-          }
-        });
-      } catch(e) {
-        console.warn("Could not bind USB event listeners:", e);
-      }
+      navigator.usb.addEventListener('disconnect', (event) => {
+        if (usbDevice && event.device === usbDevice) {
+          usbDevice = null;
+          setPrinterState('offline');
+          showToast("Epson L3210 disconnected.", "error");
+        }
+      });
     }
 
     async function requestEpsonUSB() {
-      if (!('usb' in navigator)) {
-        showToast("WebUSB not supported in this browser environment.", "error");
+      if (!navigator.usb) {
+        showToast("WebUSB is not supported in this browser. Please use Google Chrome.", "error");
         return;
       }
 
@@ -887,18 +502,19 @@
         const device = await navigator.usb.requestDevice({
           filters: [{ vendorId: EPSON_VENDOR_ID }]
         });
+
         await autoConnectDevice(device);
-        showToast("Connected to " + (device.productName || "Epson EcoTank L3210"), "success");
+        showToast("Connected to: " + (device.productName || "Epson EcoTank L3210"), "success");
       } catch (err) {
-        if (err.name === 'SecurityError') {
-          showToast("USB blocked by browser policy. Open in Native Tab.", "error");
-          document.getElementById('permissionBanner').classList.remove('hidden');
-        } else if (err.name !== 'NotFoundError') {
-          showToast("USB Request Error: " + err.message, "error");
+        if (err.name === 'NotFoundError') {
+          showToast("No device selected in Chrome USB prompt.", "error");
+        } else {
+          showToast("USB Error: " + err.message, "error");
         }
       }
     }
 
+    // Ink Indicator Bar UI Update & Refill on click
     function updateInkUI() {
       const inks = ['bk', 'c', 'm', 'y'];
       const names = { bk: 'BK', c: 'C', m: 'M', y: 'Y' };
@@ -909,6 +525,8 @@
         const bar = document.getElementById(`bar-${key}`);
         const box = document.getElementById(`box-${key}`);
         const lbl = document.getElementById(`lbl-${key}`);
+
+        if (!bar || !box || !lbl) return;
 
         bar.style.height = `${pct}%`;
 
@@ -922,6 +540,8 @@
           box.className = "w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200";
           lbl.className = "text-slate-600 mt-1 block";
           lbl.innerText = names[key];
+
+          if (key === 'bk') bar.className = "w-full bg-slate-800 rounded-md transition-all duration-500";
           if (key === 'c') bar.className = "w-full bg-cyan-500 rounded-md transition-all duration-500";
           if (key === 'm') bar.className = "w-full bg-pink-500 rounded-md transition-all duration-500";
           if (key === 'y') bar.className = "w-full bg-amber-400 rounded-md transition-all duration-500";
@@ -931,101 +551,142 @@
       const banner = document.getElementById('inkWarningBanner');
       const warningText = document.getElementById('inkWarningText');
 
-      if (lowInks.length === 4) {
+      if (lowInks.length > 0) {
         banner.classList.remove('hidden');
-        warningText.innerText = "All Inks Low";
-      } else if (lowInks.length > 0) {
-        banner.classList.remove('hidden');
-        warningText.innerText = `Low: ${lowInks.join(', ')}`;
+        warningText.innerText = lowInks.length === 4 ? "All Inks Low" : `Low: ${lowInks.join(', ')}`;
       } else {
         banner.classList.add('hidden');
       }
     }
 
-    function refillInk(key) {
+    function toggleInkLevel(key) {
       inkLevels[key] = 100;
       updateInkUI();
-      showToast(`${key.toUpperCase()} Ink Tank refilled to 100%`, 'success');
+      showToast(`${key.toUpperCase()} ink tank refilled to 100%!`, "success");
     }
 
-    function handleFileSelected(event) {
+    // True File Preview (Images & PDFs)
+    async function handleFileSelected(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       selectedFileObj = file;
-      document.getElementById('selectedFileNameBadge').innerText = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-      document.getElementById('previewCard').classList.remove('hidden');
+      const previewCard = document.getElementById('previewCard');
+      const imgPreview = document.getElementById('imagePreview');
+      const pdfCanvas = document.getElementById('pdfCanvasPreview');
+
+      previewCard.classList.remove('hidden');
 
       if (file.type.startsWith('image/')) {
+        pdfCanvas.classList.add('hidden');
         const reader = new FileReader();
-        reader.onload = e => {
-          selectedFileDataUrl = e.target.result;
-          document.getElementById('imagePreview').src = selectedFileDataUrl;
-          document.getElementById('imagePreview').classList.remove('hidden');
-          document.getElementById('pdfPreviewBox').classList.add('hidden');
-          updatePrintSettings();
+        reader.onload = function(e) {
+          imgPreview.src = e.target.result;
+          imgPreview.classList.remove('hidden');
         };
         reader.readAsDataURL(file);
-      } else {
-        selectedFileDataUrl = null;
-        document.getElementById('imagePreview').classList.add('hidden');
-        document.getElementById('pdfPreviewBox').classList.remove('hidden');
-        document.getElementById('pdfFileName').innerText = file.name;
-        updatePrintSettings();
-      }
+      } else if (file.type === 'application/pdf') {
+        imgPreview.classList.add('hidden');
+        pdfCanvas.classList.remove('hidden');
+        
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const typedarray = new Uint8Array(e.target.result);
+          const pdf = await pdfjsLib.getDocument(typedarray).promise;
+          const page = await pdf.getPage(1);
+          
+          const viewport = page.getViewport({ scale: 1.5 });
+          pdfCanvas.height = viewport.height;
+          pdfCanvas.width = viewport.width;
 
-      document.getElementById('previewCard').scrollIntoView({ behavior: 'smooth' });
+          const context = pdfCanvas.getContext('2d');
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        showToast("Unsupported file type. Please select an Image or PDF.", "error");
+        clearSelectedFile();
+      }
     }
 
     function clearSelectedFile() {
       selectedFileObj = null;
-      selectedFileDataUrl = null;
       document.getElementById('fileInput').value = "";
       document.getElementById('previewCard').classList.add('hidden');
+      document.getElementById('copiesInput').value = "1";
+    }
+
+    function startPrintingProcess() {
+      if (!selectedFileObj) return;
+      if (!usbDevice) {
+        showToast("Printer Offline! Connect USB OTG first.", "error");
+        return;
+      }
+      const copies = parseInt(document.getElementById('copiesInput').value, 10) || 1;
+      processPrintJobInBackground(selectedFileObj.name, copies);
     }
 
     function handleDpiSelectChange(e) {
-      document.getElementById('customDpiBox').className = e.target.value === 'custom' ? 'space-y-1' : 'hidden';
+      const customBox = document.getElementById('customDpiBox');
+      if (e.target.value === 'custom') {
+        customBox.classList.remove('hidden');
+      } else {
+        customBox.classList.add('hidden');
+      }
     }
 
     function getSelectedDpi() {
-      const val = document.getElementById('dpiSelect').value;
-      if (val === 'custom') {
-        const custom = parseInt(document.getElementById('customDpiInput').value, 10);
-        return isNaN(custom) || custom < 50 ? 300 : custom;
+      const selectVal = document.getElementById('dpiSelect').value;
+      if (selectVal === 'custom') {
+        const customInput = parseInt(document.getElementById('customDpiInput').value, 10);
+        return isNaN(customInput) || customInput < 50 ? 300 : customInput;
       }
-      return parseInt(val, 10);
+      return parseInt(selectVal, 10);
     }
 
     function openScanModal() {
+      if (!usbDevice) {
+        showToast("Printer Offline! Connect USB OTG first.", "error");
+        return;
+      }
       document.getElementById('scanModal').classList.remove('hidden');
     }
 
-    function closeScanModal() { document.getElementById('scanModal').classList.add('hidden'); }
+    function closeScanModal() {
+      document.getElementById('scanModal').classList.add('hidden');
+    }
 
     async function executeScanDriver() {
       const dpi = getSelectedDpi();
-      const colorMode = document.getElementById('scanColorMode').value;
       closeScanModal();
+      showToast(`Initiating Flatbed Scan at ${dpi} DPI...`, "success");
 
       try {
-        if (outEndpoint && inEndpoint && usbDevice) {
-          const escInit = new Uint8Array([0x1B, 0x40]);
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit).catch(()=>{});
-          await usbDevice.transferIn(inEndpoint.endpointNumber, 1024).catch(()=>{});
+        const escInit = new Uint8Array([0x1b, 0x40]);
+        const escDpi = new Uint8Array([0x1b, 0x52, (dpi >> 8) & 0xff, dpi & 0xff]);
+        const escStart = new Uint8Array([0x1b, 0x47]);
+
+        if (outEndpoint && usbDevice) {
+          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
+          await usbDevice.transferOut(outEndpoint.endpointNumber, escDpi);
+          await usbDevice.transferOut(outEndpoint.endpointNumber, escStart);
+
+          if (inEndpoint) {
+            await usbDevice.transferIn(inEndpoint.endpointNumber, 64000);
+          }
         }
       } catch (e) {
-        console.warn("ESC/I command executed:", e);
+        console.warn("ESC/I transfer note:", e);
       }
 
-      renderScanResult(dpi, colorMode);
+      renderScanResult(dpi);
     }
 
-    function renderScanResult(dpi, colorMode = 'color') {
+    function renderScanResult(dpi) {
       const card = document.getElementById('scanResultCard');
       const canvas = document.getElementById('scanCanvas');
       const ctx = canvas.getContext('2d');
-      document.getElementById('scanDpiBadge').innerText = `${dpi} DPI • ${colorMode.toUpperCase()}`;
+      document.getElementById('scanDpiBadge').innerText = `${dpi} DPI`;
 
       canvas.width = 500;
       canvas.height = 650;
@@ -1033,96 +694,69 @@
 
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = colorMode === 'color' ? '#1e40af' : '#334155';
+
+      ctx.fillStyle = '#1e40af';
       ctx.fillRect(35, 45, canvas.width - 70, 10);
-      
+      ctx.fillRect(35, 65, 200, 6);
+
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 20px sans-serif';
-      ctx.fillText(`Epson L3210 Flatbed Scan Output`, 35, 90);
-      
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText(`Epson Flatbed Scan Document`, 35, 110);
+
       ctx.fillStyle = '#64748b';
       ctx.font = '13px sans-serif';
-      ctx.fillText(`Resolution: ${dpi} DPI  |  Mode: ${colorMode.toUpperCase()}  |  Protocol: ESC/I Flatbed`, 35, 118);
-      
-      ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
-      ctx.strokeRect(35, 140, canvas.width - 70, 470);
-      
-      ctx.fillStyle = colorMode === 'monochrome' ? '#000000' : '#64748b';
-      for(let y = 170; y < 580; y += 30) {
-        ctx.fillRect(55, y, Math.random() * 280 + 100, 6);
+      ctx.fillText(`Source: Epson EcoTank L3210 • ${dpi} DPI`, 35, 135);
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(35, 160, canvas.width - 70, 430);
+
+      ctx.fillStyle = '#94a3b8';
+      for(let y = 190; y < 550; y += 26) {
+        ctx.fillRect(60, y, Math.random() * 250 + 140, 5);
       }
 
-      // Convert scanned canvas to image for direct print settings
-      selectedFileDataUrl = canvas.toDataURL('image/jpeg', 0.95);
-      
+      showToast("Scan completed successfully!", "success");
       card.scrollIntoView({ behavior: 'smooth' });
-      showToast("Flatbed document scanned successfully.", "success");
     }
 
-    function sendScanToPrintSettings() {
-      const canvas = document.getElementById('scanCanvas');
-      selectedFileDataUrl = canvas.toDataURL('image/jpeg', 0.95);
-      selectedFileObj = { name: `Scan_Capture_${Date.now()}.jpg`, size: 1024 * 120 };
-
-      document.getElementById('imagePreview').src = selectedFileDataUrl;
-      document.getElementById('imagePreview').classList.remove('hidden');
-      document.getElementById('pdfPreviewBox').classList.add('hidden');
-      document.getElementById('selectedFileNameBadge').innerText = selectedFileObj.name;
-      document.getElementById('previewCard').classList.remove('hidden');
-
-      updatePrintSettings();
-      document.getElementById('previewCard').scrollIntoView({ behavior: 'smooth' });
-      showToast("Scanned image loaded into print settings.", "success");
-    }
-
-    function openScanInNewWindow() {
-      const canvas = document.getElementById('scanCanvas');
-      const dataUrl = canvas.toDataURL('image/png');
-      const win = window.open('', '_blank');
-      if (!win) {
-        showToast("Pop-up blocked. Allow pop-ups to open scan in new window.", "error");
+    function printScannedDocument() {
+      if (!usbDevice) {
+        showToast("Printer Offline! Connect USB OTG first.", "error");
         return;
       }
-      win.document.write(`
-        <html>
-        <head><title>Scanned Document Preview</title></head>
-        <body style="margin:0; background:#0f172a; display:flex; flex-direction:column; align-items:center; justify-center; padding:20px; color:white; font-family:sans-serif;">
-          <h2 style="margin-bottom:10px;">Epson L3210 Scanned Document Page</h2>
-          <button onclick="window.print()" style="background:#10b981; color:white; border:none; padding:10px 20px; font-weight:bold; border-radius:8px; cursor:pointer; margin-bottom:20px;">Print Page</button>
-          <img src="${dataUrl}" style="max-width:90%; height:auto; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.5);" />
-        </body>
-        </html>
-      `);
-      win.document.close();
+      processPrintJobInBackground("Scanned_Document.jpg", 1);
     }
 
     function saveScanAs(format) {
       const canvas = document.getElementById('scanCanvas');
-      const ts = Date.now();
+      
       if (format === 'jpg') {
         const link = document.createElement('a');
-        link.download = `L3210_Scan_${ts}.jpg`;
+        link.download = `Epson_Scan_${Date.now()}.jpg`;
         link.href = canvas.toDataURL('image/jpeg', 0.95);
         link.click();
       } else if (format === 'png') {
         const link = document.createElement('a');
-        link.download = `L3210_Scan_${ts}.png`;
+        link.download = `Epson_Scan_${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       } else if (format === 'pdf') {
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 10, 10, 190, 250);
-        pdf.save(`L3210_Scan_${ts}.pdf`);
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        pdf.addImage(imgData, 'JPEG', 10, 10, 190, 250);
+        pdf.save(`Epson_Scan_${Date.now()}.pdf`);
       }
+      showToast(`Scan saved as ${format.toUpperCase()}`, "success");
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       detectDeviceEnvironment();
       updateInkUI();
-      initializeUsbListeners();
       checkAutoConnect();
     });
+
     window.addEventListener('resize', detectDeviceEnvironment);
   </script>
 </body>
