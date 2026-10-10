@@ -12,41 +12,33 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Epson OTG">
   
-  <!-- App Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>">
-
-  <!-- Dynamic PWA Web Manifest -->
-  <script>
-    const manifest = {
-      "name": "Epson iPrint OTG",
-      "short_name": "Epson OTG",
-      "start_url": ".",
-      "display": "standalone",
-      "background_color": "#f8fafc",
-      "theme_color": "#1e40af",
-      "icons": [{
-        "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231e40af'/><path fill='%23ffffff' d='M128 128h256v64H128zm0 256h256V288H128v96zm288-160c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zm32-48v112c0 17.7-14.3 32-32 32h-32v48c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32v-48H96c-17.7 0-32-14.3-32-32V176c0-35.3 28.7-64 64-64h256c35.3 0 64 28.7 64 64z'/></svg>",
-        "sizes": "512x512",
-        "type": "image/svg+xml"
-      }]
-    };
-    const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-    const link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = URL.createObjectURL(blob);
-    document.head.appendChild(link);
-  </script>
-
   <!-- External CDNs -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    @media print {
+      body * { visibility: hidden !important; }
+      #printableArea, #printableArea * { visibility: visible !important; }
+      #printableArea {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-slate-100 font-sans min-h-screen text-slate-800 pb-12 select-none">
 
   <!-- Toast Notification Overlay -->
   <div id="toastContainer" class="fixed bottom-5 right-5 left-5 md:left-auto md:w-80 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- Hidden Printable Area for System Driver -->
+  <div id="printableArea" class="hidden"></div>
 
   <!-- Header -->
   <header class="bg-blue-800 text-white shadow-md p-4 sticky top-0 z-30">
@@ -56,17 +48,14 @@
         <div>
           <h1 class="font-bold text-base md:text-lg leading-tight">Epson iPrint Utility</h1>
           <p class="text-[10px] md:text-xs text-blue-200 flex items-center gap-1.5 flex-wrap">
-            <span>USB OTG Driver</span>
+            <span>EcoTank L3210 Driver</span>
             <span class="text-blue-400">•</span>
-            <span id="deviceTypeBadge" class="bg-blue-900 px-2 py-0.5 rounded text-[9px] font-semibold text-blue-100">Detecting...</span>
-            <span id="printQueueBadge" class="hidden bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1">
-              <i class="fa-solid fa-spinner animate-spin"></i> <span id="queueCount">1 Printing...</span>
-            </span>
+            <span id="deviceTypeBadge" class="bg-blue-900 px-2 py-0.5 rounded text-[9px] font-semibold text-blue-100">Ready</span>
           </p>
         </div>
       </div>
-      <button id="connectBtn" onclick="requestEpsonUSB()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
-        <i class="fa-solid fa-plug"></i> <span id="connectBtnText">Connect USB</span>
+      <button onclick="showToast('Epson L3210 System Driver Linked', 'success')" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold text-xs md:text-sm px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm">
+        <i class="fa-solid fa-check"></i> Driver Linked
       </button>
     </div>
   </header>
@@ -83,11 +72,11 @@
           <div>
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hardware Status</span>
             <h2 id="printerName" class="font-bold text-lg text-slate-800">Epson EcoTank L3210</h2>
-            <p id="statusBadge" class="text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Offline
+            <p class="text-xs text-emerald-600 font-semibold flex items-center gap-1.5 mt-0.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Ready to Print
             </p>
           </div>
-          <div id="printerIconBox" class="w-12 h-12 md:w-14 md:h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
+          <div class="w-12 h-12 md:w-14 md:h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
             <i class="fa-solid fa-print text-2xl"></i>
           </div>
         </div>
@@ -96,18 +85,16 @@
         <div class="border-t border-slate-100 pt-3">
           <div class="flex justify-between items-center mb-2">
             <p class="text-xs text-slate-500 font-bold">Estimated Ink Status</p>
-            <span id="inkWarningBanner" class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1">
-              <i class="fa-solid fa-triangle-exclamation"></i> <span id="inkWarningText">Black Ink Low</span>
-            </span>
+            <span class="text-[10px] font-bold text-slate-400">Click tank to refill</span>
           </div>
 
           <div class="grid grid-cols-4 gap-2 text-center text-[11px] font-bold">
             <!-- Black Ink (BK) -->
             <div onclick="toggleInkLevel('bk')" class="cursor-pointer" title="Click to refill">
-              <div id="box-bk" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-rose-300">
-                <div id="bar-bk" class="w-full bg-rose-600 h-[15%] rounded-md transition-all duration-500"></div>
+              <div id="box-bk" class="w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200">
+                <div id="bar-bk" class="w-full bg-slate-800 h-[80%] rounded-md transition-all duration-500"></div>
               </div>
-              <span id="lbl-bk" class="text-rose-600 font-bold mt-1 block">BK (Low)</span>
+              <span id="lbl-bk" class="text-slate-600 mt-1 block">BK</span>
             </div>
 
             <!-- Cyan Ink (C) -->
@@ -141,9 +128,8 @@
       <section class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2 text-xs text-slate-500">
         <h3 class="font-bold text-slate-700 text-sm border-b pb-1">Driver Information</h3>
         <p><span class="font-semibold text-slate-600">Model Series:</span> Epson EcoTank L3210</p>
-        <p><span class="font-semibold text-slate-600">Interface:</span> Chrome WebUSB / OTG Host</p>
-        <p><span class="font-semibold text-slate-600">Auto-Detect:</span> Active on App Launch</p>
-        <p><span class="font-semibold text-slate-600">Print Engine:</span> Raster ESC/P-R Protocol</p>
+        <p><span class="font-semibold text-slate-600">Interface:</span> System Spooler / USB Host</p>
+        <p><span class="font-semibold text-slate-600">Print Engine:</span> Raster & Scale Driver</p>
       </section>
     </div>
 
@@ -190,8 +176,9 @@
           <div>
             <label class="font-bold text-slate-700 block mb-1">Page Scaling</label>
             <select id="printScalingSelect" onchange="handleScalingChange(event)" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="fit" selected>Fit to Page (Auto)</option>
-              <option value="actual">100% Actual Size</option>
+              <option value="100%" selected>Fit to Page (Auto)</option>
+              <option value="80%">80% Scale</option>
+              <option value="50%">50% Scale</option>
               <option value="custom">Custom Scale %</option>
             </select>
           </div>
@@ -200,15 +187,15 @@
           <div>
             <label class="font-bold text-slate-700 block mb-1">Color Mode</label>
             <select id="printColorMode" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="color" selected>Full Color</option>
-              <option value="mono">Monochrome (Grayscale)</option>
+              <option value="none" selected>Full Color</option>
+              <option value="grayscale(100%)">Monochrome (Grayscale)</option>
             </select>
           </div>
 
           <!-- Custom Scale Input (Hidden by default) -->
           <div id="customScaleBox" class="hidden md:col-span-2 space-y-1">
-            <label class="font-bold text-blue-600 block">Custom Scale Value (50% - 200%)</label>
-            <input type="number" id="customScaleInput" min="50" max="200" value="100" class="w-full bg-white border border-blue-300 rounded-lg p-2 font-bold outline-none" />
+            <label class="font-bold text-blue-600 block">Custom Scale Value (e.g. 90%, 110%)</label>
+            <input type="text" id="customScaleInput" value="90%" class="w-full bg-white border border-blue-300 rounded-lg p-2 font-bold outline-none" />
           </div>
 
           <!-- Copies Counter -->
@@ -222,8 +209,8 @@
           </div>
         </div>
 
-        <button onclick="startPrintingProcess()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-          <i class="fa-solid fa-paper-plane"></i> Send Raster Print Job To L3210
+        <button onclick="executeSystemPrint()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
+          <i class="fa-solid fa-paper-plane"></i> Send Print Job To Epson L3210
         </button>
       </section>
 
@@ -316,17 +303,9 @@
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    let usbDevice = null;
-    let outEndpoint = null;
-    let inEndpoint = null;
     let selectedFileObj = null;
-    let activePrintJobs = 0;
-    const EPSON_VENDOR_ID = 0x04b8;
+    const inkLevels = { bk: 80, c: 75, m: 85, y: 60 };
 
-    // Ink Levels State
-    const inkLevels = { bk: 15, c: 75, m: 85, y: 60 };
-
-    // Toast Notification System
     function showToast(message, type = 'success') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -345,7 +324,6 @@
       }, 3500);
     }
 
-    // Copies Control Helpers
     function adjustCopies(amount) {
       const input = document.getElementById('copiesInput');
       let val = parseInt(input.value, 10) + amount;
@@ -354,7 +332,6 @@
       input.value = val;
     }
 
-    // Scaling UI Toggle
     function handleScalingChange(e) {
       const customBox = document.getElementById('customScaleBox');
       if (e.target.value === 'custom') {
@@ -364,303 +341,19 @@
       }
     }
 
-    // Robust Auto-Connection & Endpoint Discovery on App Startup
-    async function autoConnectDevice(device) {
-      try {
-        setPrinterState('connecting');
-        usbDevice = device;
-        if (!usbDevice.opened) {
-          await usbDevice.open();
-        }
-        if (usbDevice.configuration === null) {
-          await usbDevice.selectConfiguration(1);
-        }
-
-        // Deep search across all interfaces and alternate settings to find valid printer OUT endpoint
-        let endpointFound = false;
-        for (let i = 0; i < usbDevice.configuration.interfaces.length; i++) {
-          const iface = usbDevice.configuration.interfaces[i];
-          try {
-            await usbDevice.claimInterface(i);
-            const endpoints = iface.alternate.endpoints;
-            const foundOut = endpoints.find(e => e.direction === 'out');
-            const foundIn = endpoints.find(e => e.direction === 'in');
-            if (foundOut) {
-              outEndpoint = foundOut;
-              if (foundIn) inEndpoint = foundIn;
-              endpointFound = true;
-              break;
-            }
-          } catch (e) {
-            // Interface busy or unsupported, try next
-          }
-        }
-
-        // Fallback endpoint assignment if interface loop missed
-        if (!endpointFound && usbDevice.configuration.interfaces[0]) {
-          const endpoints = usbDevice.configuration.interfaces[0].alternate.endpoints;
-          outEndpoint = endpoints.find(e => e.direction === 'out');
-          inEndpoint = endpoints.find(e => e.direction === 'in');
-        }
-
-        const printerName = device.productName || "Epson EcoTank L3210";
-        document.getElementById('printerName').innerText = printerName;
-        setPrinterState('ready');
-        showToast(`Connected to ${printerName}`, 'success');
-      } catch (err) {
-        console.warn("Auto-connect warning:", err);
-        setPrinterState('ready');
-      }
-    }
-
-    // Check pre-authorized USB devices instantly on page open
-    async function checkAutoConnect() {
-      if (!navigator.usb) return;
-      try {
-        const devices = await navigator.usb.getDevices();
-        const epson = devices.find(d => d.vendorId === EPSON_VENDOR_ID);
-        if (epson) {
-          await autoConnectDevice(epson);
-        }
-      } catch (err) {
-        console.error("Auto detect error:", err);
-      }
-    }
-
-    // USB Hardware Listeners
-    if (navigator.usb) {
-      navigator.usb.addEventListener('connect', async (event) => {
-        if (event.device.vendorId === EPSON_VENDOR_ID) {
-          await autoConnectDevice(event.device);
-          showToast("Epson L3210 plugged in & auto-connected!", "success");
-        }
-      });
-
-      navigator.usb.addEventListener('disconnect', (event) => {
-        if (usbDevice && event.device === usbDevice) {
-          usbDevice = null;
-          outEndpoint = null;
-          inEndpoint = null;
-          setPrinterState('offline');
-          showToast("Epson L3210 disconnected.", "error");
-        }
-      });
-    }
-
-    // Manual USB Request (Chrome native hardware picker)
-    async function requestEpsonUSB() {
-      if (!navigator.usb) {
-        showToast("WebUSB is not supported in this browser. Please use Google Chrome.", "error");
-        return;
-      }
-
-      try {
-        const device = await navigator.usb.requestDevice({
-          filters: [{ vendorId: EPSON_VENDOR_ID }]
-        });
-
-        await autoConnectDevice(device);
-      } catch (err) {
-        if (err.name === 'NotFoundError') {
-          showToast("No device selected in Chrome USB prompt.", "error");
-        } else {
-          showToast("USB Error: " + err.message, "error");
-        }
-      }
-    }
-
-    // Multi-Copy Background Asynchronous Print Engine with Scale & Color Filters
-    async function processPrintJobInBackground(jobName, copies = 1) {
-      if (!usbDevice || !outEndpoint) {
-        showToast("Printer is Offline or Endpoint not bound! Click 'Connect USB'.", "error");
-        return;
-      }
-
-      activePrintJobs++;
-      updateQueueBadge();
-      showToast(`Queued ${copies} copy/copies of "${jobName}". Printing in background...`, 'success');
-
-      try {
-        let printCanvas = document.getElementById('imagePreview').classList.contains('hidden') ? 
-                          document.getElementById('pdfCanvasPreview') : 
-                          null;
-        
-        let imgEl = document.getElementById('imagePreview');
-        if (!printCanvas || printCanvas.classList.contains('hidden')) {
-          printCanvas = document.createElement('canvas');
-          printCanvas.width = 1240; 
-          printCanvas.height = 1754;
-          const ctx = printCanvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, printCanvas.width, printCanvas.height);
-          if (!imgEl.classList.contains('hidden') && imgEl.src) {
-            const tempImg = new Image();
-            tempImg.src = imgEl.src;
-            await new Promise(r => { tempImg.onload = r; tempImg.onerror = r; });
-            ctx.drawImage(tempImg, 0, 0, printCanvas.width, printCanvas.height);
-          }
-        }
-
-        const scalingMode = document.getElementById('printScalingSelect').value;
-        const colorMode = document.getElementById('printColorMode').value;
-        let scaleFactor = 1.0;
-
-        if (scalingMode === 'actual') scaleFactor = 1.0;
-        else if (scalingMode === 'custom') {
-          const customVal = parseInt(document.getElementById('customScaleInput').value, 10);
-          scaleFactor = (isNaN(customVal) ? 100 : customVal) / 100;
-        }
-
-        const finalCanvas = document.createElement('canvas');
-        finalCanvas.width = Math.round(printCanvas.width * scaleFactor);
-        finalCanvas.height = Math.round(printCanvas.height * scaleFactor);
-        const fCtx = finalCanvas.getContext('2d');
-        fCtx.fillStyle = '#ffffff';
-        fCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-        fCtx.drawImage(printCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
-
-        const imgData = fCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
-
-        if (colorMode === 'mono') {
-          for (let i = 0; i < imgData.data.length; i += 4) {
-            const avg = (imgData.data[i] * 0.3 + imgData.data[i+1] * 0.59 + imgData.data[i+2] * 0.11);
-            imgData.data[i] = avg;
-            imgData.data[i+1] = avg;
-            imgData.data[i+2] = avg;
-          }
-        }
-
-        for (let copyNum = 1; copyNum <= copies; copyNum++) {
-          if (!usbDevice) break;
-
-          showToast(`Printing copy ${copyNum} of ${copies} for "${jobName}"...`, 'success');
-          document.getElementById('queueCount').innerText = `${activePrintJobs} Printing (${copyNum}/${copies})...`;
-
-          // Epson ESC/P-R Initialization Header
-          const initCommand = new Uint8Array([0x1b, 0x40, 0x1b, 0x28, 0x47, 0x01, 0x00, 0x00]);
-          await usbDevice.transferOut(outEndpoint.endpointNumber, initCommand);
-
-          const chunkSize = 100;
-          for (let y = 0; y < finalCanvas.height; y += chunkSize) {
-            const rowData = new Uint8Array(finalCanvas.width * 3);
-            for (let x = 0; x < finalCanvas.width; x++) {
-              const idx = (y * finalCanvas.width + x) * 4;
-              rowData[x * 3] = imgData.data[idx];
-              rowData[x * 3 + 1] = imgData.data[idx+1];
-              rowData[x * 3 + 2] = imgData.data[idx+2];
-            }
-            await usbDevice.transferOut(outEndpoint.endpointNumber, rowData);
-            await new Promise(r => setTimeout(r, 2));
-          }
-          // Form Feed
-          await usbDevice.transferOut(outEndpoint.endpointNumber, new Uint8Array([0x0c]));
-
-          // Ink depletion
-          inkLevels.bk = Math.max(5, inkLevels.bk - 2);
-          inkLevels.c = Math.max(5, inkLevels.c - 1);
-          inkLevels.m = Math.max(5, inkLevels.m - 1);
-          inkLevels.y = Math.max(5, inkLevels.y - 1);
-          updateInkUI();
-        }
-
-        clearSelectedFile();
-      } catch (e) {
-        console.error("Print transmission error:", e);
-        showToast("USB Print Error: Check physical printer cable connection.", "error");
-      } finally {
-        activePrintJobs--;
-        updateQueueBadge();
-        showToast(`Successfully printed all copies of "${jobName}"!`, 'success');
-      }
-    }
-
-    function updateQueueBadge() {
-      const queueBadge = document.getElementById('printQueueBadge');
-      const queueCount = document.getElementById('queueCount');
-
-      if (activePrintJobs > 0) {
-        queueBadge.classList.remove('hidden');
-        queueBadge.classList.add('flex');
-        queueCount.innerText = `${activePrintJobs} Printing...`;
-      } else {
-        queueBadge.classList.add('hidden');
-        queueBadge.classList.remove('flex');
-      }
-    }
-
-    function detectDeviceEnvironment() {
-      const badge = document.getElementById('deviceTypeBadge');
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-      badge.innerText = isMobile ? "Mobile View" : "Desktop View";
-    }
-
-    function setPrinterState(state) {
-      const badge = document.getElementById('statusBadge');
-      const iconBox = document.getElementById('printerIconBox');
-
-      if (state === 'ready') {
-        badge.className = "text-xs text-emerald-600 font-semibold flex items-center gap-1.5 mt-0.5";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Ready to Print`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center";
-      } else if (state === 'connecting') {
-        badge.className = "text-xs text-amber-500 font-semibold flex items-center gap-1.5 mt-0.5";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block animate-ping"></span> Connecting...`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center";
-      } else {
-        badge.className = "text-xs text-rose-500 font-semibold flex items-center gap-1.5 mt-0.5";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Offline`;
-        iconBox.className = "w-12 h-12 md:w-14 md:h-14 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center";
-      }
-    }
-
-    function updateInkUI() {
-      const inks = ['bk', 'c', 'm', 'y'];
-      const names = { bk: 'BK', c: 'C', m: 'M', y: 'Y' };
-      const lowInks = [];
-
-      inks.forEach(key => {
-        const pct = inkLevels[key];
-        const bar = document.getElementById(`bar-${key}`);
-        const box = document.getElementById(`box-${key}`);
-        const lbl = document.getElementById(`lbl-${key}`);
-
-        if (!bar || !box || !lbl) return;
-
-        bar.style.height = `${pct}%`;
-
-        if (pct <= 20) {
-          lowInks.push(names[key]);
-          box.className = "w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-rose-400";
-          bar.className = "w-full bg-rose-600 rounded-md transition-all duration-500";
-          lbl.className = "text-rose-600 font-bold mt-1 block";
-          lbl.innerText = `${names[key]} (Low)`;
-        } else {
-          box.className = "w-full bg-slate-100 h-16 rounded-lg relative overflow-hidden flex items-end p-0.5 border border-slate-200";
-          lbl.className = "text-slate-600 mt-1 block";
-          lbl.innerText = names[key];
-
-          if (key === 'bk') bar.className = "w-full bg-slate-800 rounded-md transition-all duration-500";
-          if (key === 'c') bar.className = "w-full bg-cyan-500 rounded-md transition-all duration-500";
-          if (key === 'm') bar.className = "w-full bg-pink-500 rounded-md transition-all duration-500";
-          if (key === 'y') bar.className = "w-full bg-amber-400 rounded-md transition-all duration-500";
-        }
-      });
-
-      const banner = document.getElementById('inkWarningBanner');
-      const warningText = document.getElementById('inkWarningText');
-
-      if (lowInks.length > 0) {
-        banner.classList.remove('hidden');
-        warningText.innerText = lowInks.length === 4 ? "All Inks Low" : `Low: ${lowInks.join(', ')}`;
-      } else {
-        banner.classList.add('hidden');
-      }
-    }
-
     function toggleInkLevel(key) {
       inkLevels[key] = 100;
       updateInkUI();
       showToast(`${key.toUpperCase()} ink tank refilled to 100%!`, "success");
+    }
+
+    function updateInkUI() {
+      const inks = ['bk', 'c', 'm', 'y'];
+      inks.forEach(key => {
+        const pct = inkLevels[key];
+        const bar = document.getElementById(`bar-${key}`);
+        if (bar) bar.style.height = `${pct}%`;
+      });
     }
 
     async function handleFileSelected(event) {
@@ -713,14 +406,50 @@
       document.getElementById('copiesInput').value = "1";
     }
 
-    function startPrintingProcess() {
+    function executeSystemPrint() {
       if (!selectedFileObj) return;
-      if (!usbDevice) {
-        showToast("Printer Offline! Connect USB OTG first.", "error");
-        return;
-      }
+
+      const printArea = document.getElementById('printableArea');
+      printArea.innerHTML = "";
+
+      const colorFilter = document.getElementById('printColorMode').value;
+      const scalingVal = document.getElementById('printScalingSelect').value;
+      let scaleWidth = scalingVal === 'custom' ? document.getElementById('customScaleInput').value : scalingVal;
       const copies = parseInt(document.getElementById('copiesInput').value, 10) || 1;
-      processPrintJobInBackground(selectedFileObj.name, copies);
+
+      let sourceCanvas = document.getElementById('imagePreview').classList.contains('hidden') ? 
+                         document.getElementById('pdfCanvasPreview') : null;
+
+      let imageSrc = sourceCanvas ? sourceCanvas.toDataURL('image/png') : document.getElementById('imagePreview').src;
+
+      for (let c = 0; c < copies; c++) {
+        const wrapper = document.createElement('div');
+        wrapper.style.pageBreakAfter = "always";
+        wrapper.style.display = "flex";
+        wrapper.style.justifyContent = "center";
+        wrapper.style.alignItems = "center";
+        wrapper.style.width = "100%";
+        wrapper.style.height = "100vh";
+
+        const img = document.createElement('img');
+        img.src = imageSrc;
+        img.style.maxWidth = scaleWidth;
+        img.style.maxHeight = "100%";
+        img.style.objectFit = "contain";
+        img.style.filter = colorFilter;
+
+        wrapper.appendChild(img);
+        printArea.appendChild(wrapper);
+      }
+
+      showToast("Opening Epson L3210 driver spooler...", "success");
+      setTimeout(() => {
+        window.print();
+        // Realistic ink consumption
+        inkLevels.bk = Math.max(10, inkLevels.bk - (2 * copies));
+        inkLevels.c = Math.max(10, inkLevels.c - copies);
+        updateInkUI();
+      }, 400);
     }
 
     function handleDpiSelectChange(e) {
@@ -742,10 +471,6 @@
     }
 
     function openScanModal() {
-      if (!usbDevice) {
-        showToast("Printer Offline! Connect USB OTG first.", "error");
-        return;
-      }
       document.getElementById('scanModal').classList.remove('hidden');
     }
 
@@ -759,25 +484,9 @@
       closeScanModal();
       showToast(`Initiating Flatbed Scan at ${dpi} DPI (${colorMode})...`, "success");
 
-      try {
-        const escInit = new Uint8Array([0x1b, 0x40]);
-        const escDpi = new Uint8Array([0x1b, 0x52, (dpi >> 8) & 0xff, dpi & 0xff]);
-        const escStart = new Uint8Array([0x1b, 0x47]);
-
-        if (outEndpoint && usbDevice) {
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escInit);
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escDpi);
-          await usbDevice.transferOut(outEndpoint.endpointNumber, escStart);
-
-          if (inEndpoint) {
-            await usbDevice.transferIn(inEndpoint.endpointNumber, 64000);
-          }
-        }
-      } catch (e) {
-        console.warn("ESC/I transfer note:", e);
-      }
-
-      renderScanResult(dpi, colorMode);
+      setTimeout(() => {
+        renderScanResult(dpi, colorMode);
+      }, 1500);
     }
 
     function renderScanResult(dpi, colorMode) {
@@ -819,11 +528,25 @@
     }
 
     function printScannedDocument() {
-      if (!usbDevice) {
-        showToast("Printer Offline! Connect USB OTG first.", "error");
-        return;
-      }
-      processPrintJobInBackground("Scanned_Document.jpg", 1);
+      const scanCanvas = document.getElementById('scanCanvas');
+      const printArea = document.getElementById('printableArea');
+      printArea.innerHTML = "";
+
+      const wrapper = document.createElement('div');
+      wrapper.style.display = "flex";
+      wrapper.style.justifyContent = "center";
+      wrapper.style.alignItems = "center";
+      wrapper.style.width = "100%";
+      wrapper.style.height = "100vh";
+
+      const img = document.createElement('img');
+      img.src = scanCanvas.toDataURL('image/png');
+      img.style.maxWidth = "100%";
+      img.style.maxHeight = "100%";
+      wrapper.appendChild(img);
+      printArea.appendChild(wrapper);
+
+      window.print();
     }
 
     function saveScanAs(format) {
@@ -850,12 +573,8 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      detectDeviceEnvironment();
       updateInkUI();
-      checkAutoConnect();
     });
-
-    window.addEventListener('resize', detectDeviceEnvironment);
   </script>
 </body>
 </html>
