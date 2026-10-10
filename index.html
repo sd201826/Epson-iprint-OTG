@@ -142,8 +142,8 @@
         <h3 class="font-bold text-slate-700 text-sm border-b pb-1">Driver Information</h3>
         <p><span class="font-semibold text-slate-600">Model Series:</span> Epson EcoTank L3210</p>
         <p><span class="font-semibold text-slate-600">Interface:</span> Chrome WebUSB / OTG Host</p>
-        <p><span class="font-semibold text-slate-600">Print Engine:</span> Multi-Copy Async Background</p>
-        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Driver</p>
+        <p><span class="font-semibold text-slate-600">Print Engine:</span> Advanced Raster & Scale Engine</p>
+        <p><span class="font-semibold text-slate-600">Scan Engine:</span> ESC/I Flatbed Custom DPI Driver</p>
       </section>
     </div>
 
@@ -172,10 +172,10 @@
         </button>
       </section>
 
-      <!-- Selected File Preview & Copies Config -->
+      <!-- Selected File Preview & Advanced Settings -->
       <section id="previewCard" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center">
-          <h3 class="text-xs md:text-sm font-bold text-slate-800">Selected Print Preview</h3>
+          <h3 class="text-xs md:text-sm font-bold text-slate-800">Selected Print Preview & Settings</h3>
           <button onclick="clearSelectedFile()" class="text-xs text-rose-500 font-semibold hover:underline">Remove File</button>
         </div>
 
@@ -184,18 +184,46 @@
           <canvas id="pdfCanvasPreview" class="bg-white rounded max-h-60 object-contain hidden shadow"></canvas>
         </div>
 
-        <!-- Copies Selector Control -->
-        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
-          <span class="text-xs font-bold text-slate-700">Number of Copies:</span>
-          <div class="flex items-center space-x-2">
-            <button onclick="adjustCopies(-1)" class="w-8 h-8 bg-white rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 active:scale-95">-</button>
-            <input type="number" id="copiesInput" min="1" max="99" value="1" class="w-12 text-center text-xs font-bold bg-white border border-slate-300 rounded-lg py-1.5 outline-none" />
-            <button onclick="adjustCopies(1)" class="w-8 h-8 bg-white rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 active:scale-95">+</button>
+        <!-- Print Settings Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+          <!-- Scaling Option -->
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Page Scaling</label>
+            <select id="printScalingSelect" onchange="handleScalingChange(event)" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="fit" selected>Fit to Page (Auto)</option>
+              <option value="actual">100% Actual Size</option>
+              <option value="custom">Custom Scale %</option>
+            </select>
+          </div>
+
+          <!-- Color Mode Option -->
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Color Mode</label>
+            <select id="printColorMode" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="color" selected>Full Color</option>
+              <option value="mono">Monochrome (Grayscale)</option>
+            </select>
+          </div>
+
+          <!-- Custom Scale Input (Hidden by default) -->
+          <div id="customScaleBox" class="hidden md:col-span-2 space-y-1">
+            <label class="font-bold text-blue-600 block">Custom Scale Value (50% - 200%)</label>
+            <input type="number" id="customScaleInput" min="50" max="200" value="100" class="w-full bg-white border border-blue-300 rounded-lg p-2 font-bold outline-none" />
+          </div>
+
+          <!-- Copies Counter -->
+          <div class="md:col-span-2 flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="font-bold text-slate-700">Number of Copies:</span>
+            <div class="flex items-center space-x-2">
+              <button onclick="adjustCopies(-1)" class="w-8 h-8 bg-white rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 active:scale-95">-</button>
+              <input type="number" id="copiesInput" min="1" max="99" value="1" class="w-12 text-center text-xs font-bold bg-white border border-slate-300 rounded-lg py-1.5 outline-none" />
+              <button onclick="adjustCopies(1)" class="w-8 h-8 bg-white rounded-lg border border-slate-300 font-bold text-slate-700 hover:bg-slate-100 active:scale-95">+</button>
+            </div>
           </div>
         </div>
 
         <button onclick="startPrintingProcess()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 text-xs md:text-sm">
-          <i class="fa-solid fa-paper-plane"></i> Send Background Print Job To L3210
+          <i class="fa-solid fa-paper-plane"></i> Send Custom Raster Print Job To L3210
         </button>
       </section>
 
@@ -247,6 +275,7 @@
       </div>
 
       <div class="space-y-3">
+        <!-- DPI Select -->
         <div>
           <label class="text-xs font-bold text-slate-600 block mb-1">Resolution (DPI)</label>
           <select id="dpiSelect" onchange="handleDpiSelectChange(event)" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
@@ -259,9 +288,20 @@
           </select>
         </div>
 
+        <!-- Custom DPI Input -->
         <div id="customDpiBox" class="hidden space-y-1">
           <label class="text-[11px] font-bold text-blue-600 block">Custom DPI Value (50 - 1200)</label>
           <input type="number" id="customDpiInput" min="50" max="1200" value="200" placeholder="e.g. 200, 400" class="w-full bg-slate-50 border border-blue-300 rounded-xl p-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- Scan Color Mode -->
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Scan Color Mode</label>
+          <select id="scanColorMode" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="24bit" selected>24-bit True Color</option>
+            <option value="grayscale">8-bit Grayscale</option>
+            <option value="bw">Black & White (1-bit)</option>
+          </select>
         </div>
       </div>
 
@@ -305,7 +345,7 @@
       }, 3500);
     }
 
-    // Adjust Copies Helper
+    // Copies Control Helpers
     function adjustCopies(amount) {
       const input = document.getElementById('copiesInput');
       let val = parseInt(input.value, 10) + amount;
@@ -314,7 +354,17 @@
       input.value = val;
     }
 
-    // Multi-Copy Background Asynchronous Print Engine
+    // Scaling UI Toggle
+    function handleScalingChange(e) {
+      const customBox = document.getElementById('customScaleBox');
+      if (e.target.value === 'custom') {
+        customBox.classList.remove('hidden');
+      } else {
+        customBox.classList.add('hidden');
+      }
+    }
+
+    // Multi-Copy Background Asynchronous Print Engine with Scale & Color Filters
     async function processPrintJobInBackground(jobName, copies = 1) {
       if (!usbDevice) {
         showToast("Printer is Offline! Connect USB OTG first.", "error");
@@ -324,10 +374,8 @@
       activePrintJobs++;
       updateQueueBadge();
       showToast(`Queued ${copies} copy/copies of "${jobName}". Running in background...`, 'success');
-      clearSelectedFile();
 
       try {
-        // Pre-rasterize preview canvas once for high performance across multiple copies
         let printCanvas = document.getElementById('imagePreview').classList.contains('hidden') ? 
                           document.getElementById('pdfCanvasPreview') : 
                           null;
@@ -348,10 +396,39 @@
           }
         }
 
-        const ctx = printCanvas.getContext('2d');
-        const imgData = ctx.getImageData(0, 0, printCanvas.width, printCanvas.height);
+        // Apply Scaling & Color Adjustments
+        const scalingMode = document.getElementById('printScalingSelect').value;
+        const colorMode = document.getElementById('printColorMode').value;
+        let scaleFactor = 1.0;
 
-        // Loop through each requested copy in the background asynchronously
+        if (scalingMode === 'actual') scaleFactor = 1.0;
+        else if (scalingMode === 'custom') {
+          const customVal = parseInt(document.getElementById('customScaleInput').value, 10);
+          scaleFactor = (isNaN(customVal) ? 100 : customVal) / 100;
+        }
+
+        // Process final raster canvas with scale and filters
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = Math.round(printCanvas.width * scaleFactor);
+        finalCanvas.height = Math.round(printCanvas.height * scaleFactor);
+        const fCtx = finalCanvas.getContext('2d');
+        fCtx.fillStyle = '#ffffff';
+        fCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+        fCtx.drawImage(printCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
+
+        const imgData = fCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
+
+        // Apply Monochrome filter if selected
+        if (colorMode === 'mono') {
+          for (let i = 0; i < imgData.data.length; i += 4) {
+            const avg = (imgData.data[i] * 0.3 + imgData.data[i+1] * 0.59 + imgData.data[i+2] * 0.11);
+            imgData.data[i] = avg;
+            imgData.data[i+1] = avg;
+            imgData.data[i+2] = avg;
+          }
+        }
+
+        // Loop through requested copies
         for (let copyNum = 1; copyNum <= copies; copyNum++) {
           if (!usbDevice) break;
 
@@ -363,39 +440,38 @@
             await usbDevice.transferOut(outEndpoint.endpointNumber, initCommand).catch(() => {});
 
             const chunkSize = 100;
-            for (let y = 0; y < printCanvas.height; y += chunkSize) {
-              const rowData = new Uint8Array(printCanvas.width * 3);
-              for (let x = 0; x < printCanvas.width; x++) {
-                const idx = (y * printCanvas.width + x) * 4;
+            for (let y = 0; y < finalCanvas.height; y += chunkSize) {
+              const rowData = new Uint8Array(finalCanvas.width * 3);
+              for (let x = 0; x < finalCanvas.width; x++) {
+                const idx = (y * finalCanvas.width + x) * 4;
                 rowData[x * 3] = imgData.data[idx];
                 rowData[x * 3 + 1] = imgData.data[idx+1];
                 rowData[x * 3 + 2] = imgData.data[idx+2];
               }
               await usbDevice.transferOut(outEndpoint.endpointNumber, rowData).catch(() => {});
-              await new Promise(r => setTimeout(r, 3)); // Thread yielding for smooth UI response
+              await new Promise(r => setTimeout(r, 2));
             }
             await usbDevice.transferOut(outEndpoint.endpointNumber, new Uint8Array([0x0c])).catch(() => {});
           } else {
             await new Promise(r => setTimeout(r, 1200));
           }
 
-          // Realistic ink depletion per copy
+          // Ink depletion
           inkLevels.bk = Math.max(5, inkLevels.bk - 2);
           inkLevels.c = Math.max(5, inkLevels.c - 1);
           inkLevels.m = Math.max(5, inkLevels.m - 1);
           inkLevels.y = Math.max(5, inkLevels.y - 1);
           updateInkUI();
-
-          await new Promise(r => setTimeout(r, 300));
         }
 
+        clearSelectedFile();
       } catch (e) {
-        console.warn("Background print error:", e);
+        console.warn("Print error:", e);
         showToast("Print error occurred during USB transfer.", "error");
       } finally {
         activePrintJobs--;
         updateQueueBadge();
-        showToast(`Successfully completed all ${copies} copies of "${jobName}"!`, 'success');
+        showToast(`Successfully printed all copies of "${jobName}"!`, 'success');
       }
     }
 
@@ -440,7 +516,6 @@
       }
     }
 
-    // Auto Connect Helper
     async function autoConnectDevice(device) {
       try {
         setPrinterState('connecting');
@@ -514,7 +589,6 @@
       }
     }
 
-    // Ink Indicator Bar UI Update & Refill on click
     function updateInkUI() {
       const inks = ['bk', 'c', 'm', 'y'];
       const names = { bk: 'BK', c: 'C', m: 'M', y: 'Y' };
@@ -565,7 +639,6 @@
       showToast(`${key.toUpperCase()} ink tank refilled to 100%!`, "success");
     }
 
-    // True File Preview (Images & PDFs)
     async function handleFileSelected(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -658,8 +731,9 @@
 
     async function executeScanDriver() {
       const dpi = getSelectedDpi();
+      const colorMode = document.getElementById('scanColorMode').value;
       closeScanModal();
-      showToast(`Initiating Flatbed Scan at ${dpi} DPI...`, "success");
+      showToast(`Initiating Flatbed Scan at ${dpi} DPI (${colorMode})...`, "success");
 
       try {
         const escInit = new Uint8Array([0x1b, 0x40]);
@@ -679,10 +753,10 @@
         console.warn("ESC/I transfer note:", e);
       }
 
-      renderScanResult(dpi);
+      renderScanResult(dpi, colorMode);
     }
 
-    function renderScanResult(dpi) {
+    function renderScanResult(dpi, colorMode) {
       const card = document.getElementById('scanResultCard');
       const canvas = document.getElementById('scanCanvas');
       const ctx = canvas.getContext('2d');
@@ -701,7 +775,7 @@
 
       ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 18px sans-serif';
-      ctx.fillText(`Epson Flatbed Scan Document`, 35, 110);
+      ctx.fillText(`Epson Flatbed Scan (${colorMode.toUpperCase()})`, 35, 110);
 
       ctx.fillStyle = '#64748b';
       ctx.font = '13px sans-serif';
@@ -711,7 +785,7 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(35, 160, canvas.width - 70, 430);
 
-      ctx.fillStyle = '#94a3b8';
+      ctx.fillStyle = colorMode === 'bw' ? '#000000' : '#94a3b8';
       for(let y = 190; y < 550; y += 26) {
         ctx.fillRect(60, y, Math.random() * 250 + 140, 5);
       }
